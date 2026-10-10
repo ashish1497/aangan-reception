@@ -50,7 +50,7 @@ All are optional. With none set, the app runs on rules only, skips Telegram, and
 |---|---|---|
 | `WEBHOOK_SECRET` | Shared secret Vaani sends in the `x-webhook-secret` header | Webhook accepts any caller |
 | `GEMINI_API_KEY` | Enables Gemini extraction and brief | Rules only |
-| `GEMINI_MODEL` | Gemini model name | `gemini-2.0-flash` |
+| `GEMINI_MODEL` | Gemini model name | `gemini-2.5-flash` |
 | `TELEGRAM_BOT_TOKEN` | Bot that posts handoff notes | Notification skipped |
 | `TELEGRAM_CHAT_ID` | Designers group chat id | Notification skipped |
 | `UPSTASH_REDIS_REST_URL` | Durable storage | In-memory (not durable on Vercel) |
