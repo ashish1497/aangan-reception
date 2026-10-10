@@ -3,9 +3,27 @@
   "version": "0.1.0",
   "private": true,
   "description": "Vaani voice AI webhook and dashboard for Aangan Studio incoming phone enquiries (Mesa School Case 03)",
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
-    "test": "node test/run.js",
-    "dev": "node dev-server.js"
+    "dev": "node dev-server.js",
+    "test": "node --test test/unit test/regression.test.js test/smoke.test.js",
+    "test:unit": "node --test test/unit",
+    "test:regression": "node --test test/regression.test.js",
+    "test:smoke": "node --test test/smoke.test.js",
+    "test:legacy": "node test/run.js",
+    "test:e2e": "python3 test/e2e/test_dashboard.py",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run format:check && npm run lint && npm test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
+    "globals": "^15.15.0",
+    "prettier": "^3.9.10"
   }
 }

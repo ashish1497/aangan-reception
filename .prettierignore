@@ -1,0 +1,4 @@
+node_modules
+.vercel
+seed/enquiries
+package-lock.json

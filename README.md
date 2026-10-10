@@ -46,18 +46,18 @@ curl -X POST http://localhost:3000/api/vaani-webhook \
 
 All are optional. With none set, the app runs on rules only, skips Telegram, and stores in memory.
 
-| Variable | Purpose | If not set |
-|---|---|---|
-| `WEBHOOK_SECRET` | Shared secret Vaani sends in the `x-webhook-secret` header | Webhook accepts any caller |
-| `GEMINI_API_KEY` | Enables Gemini extraction and brief | Rules only |
-| `GEMINI_MODEL` | Gemini model name | `gemini-flash-latest` |
-| `TELEGRAM_BOT_TOKEN` | Bot that posts handoff notes | Notification skipped |
-| `TELEGRAM_CHAT_ID` | Designers group chat id | Notification skipped |
-| `UPSTASH_REDIS_REST_URL` | Durable storage | In-memory (not durable on Vercel) |
-| `UPSTASH_REDIS_REST_TOKEN` | Durable storage | In-memory |
-| `DEMO_DATA` | `off` hides the 8 synthetic demo calls | Demo calls shown (never counted in KPIs unless toggled) |
-| `VOICE_COST_PER_MIN` | Rupees per voice minute (assumption) | 6 |
-| `LLM_COST_PER_CALL` | Rupees of LLM cost per call (assumption) | 0.5 |
+| Variable                   | Purpose                                                    | If not set                                              |
+| -------------------------- | ---------------------------------------------------------- | ------------------------------------------------------- |
+| `WEBHOOK_SECRET`           | Shared secret Vaani sends in the `x-webhook-secret` header | Webhook accepts any caller                              |
+| `GEMINI_API_KEY`           | Enables Gemini extraction and brief                        | Rules only                                              |
+| `GEMINI_MODEL`             | Gemini model name                                          | `gemini-flash-latest`                                   |
+| `TELEGRAM_BOT_TOKEN`       | Bot that posts handoff notes                               | Notification skipped                                    |
+| `TELEGRAM_CHAT_ID`         | Designers group chat id                                    | Notification skipped                                    |
+| `UPSTASH_REDIS_REST_URL`   | Durable storage                                            | In-memory (not durable on Vercel)                       |
+| `UPSTASH_REDIS_REST_TOKEN` | Durable storage                                            | In-memory                                               |
+| `DEMO_DATA`                | `off` hides the 8 synthetic demo calls                     | Demo calls shown (never counted in KPIs unless toggled) |
+| `VOICE_COST_PER_MIN`       | Rupees per voice minute (assumption)                       | 6                                                       |
+| `LLM_COST_PER_CALL`        | Rupees of LLM cost per call (assumption)                   | 0.5                                                     |
 
 ## Configure the Vaani agent
 
@@ -98,3 +98,18 @@ Out of scope for this build. Both could feed the same pipeline: a WhatsApp Busin
 - **Dashboard has no login.** Anyone with the URL can read call data. Add auth (for example Vercel password protection) before real callers' data goes in.
 - Demo calls in `lib/demo.js` are synthetic and are marked DEMO DATA everywhere.
 - Not yet tested against a live Vaani account, Gemini, Telegram or Upstash.
+
+## Testing
+
+| Layer                 | Command                   | What it covers                                                                                                                                                                     |
+| --------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Unit                  | `npm run test:unit`       | rubric, pricing, cost, extraction, Gemini key rotation, Telegram, webhook, calls and stats handlers                                                                                |
+| Regression            | `npm run test:regression` | 7 fixed calls (`test/fixtures/calls.json`) must keep the reviewed outcomes in `test/fixtures/golden.json`. Update with `node scripts/make-golden.js` only after reviewing a change |
+| Smoke                 | `npm run test:smoke`      | starts the real server and hits the page and every API route once                                                                                                                  |
+| End to end (Selenium) | `npm run test:e2e`        | 10 browser tests of the dashboard (Chrome, headless). Needs `pip install selenium`. Set `BASE_URL` to test a deployed copy                                                         |
+| Legacy script         | `npm run test:legacy`     | the original 14-check script                                                                                                                                                       |
+| Everything            | `npm run check`           | prettier check, eslint, then all tests except Selenium                                                                                                                             |
+
+Every dashboard element has a `data-testid`, and `<body>` gets `data-ready="true"` once data has loaded, so Selenium waits are explicit.
+Tests clear all integration env vars first and block the network, so they never call Vaani, Gemini, Telegram or Upstash.
+Format with `npm run format`, lint with `npm run lint`.

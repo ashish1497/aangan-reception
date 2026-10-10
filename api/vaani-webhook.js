@@ -8,7 +8,9 @@ const store = require('../lib/store');
 function secretOk(req) {
   const expected = process.env.WEBHOOK_SECRET;
   if (!expected) return true;
-  const got = String((req.headers && (req.headers['x-webhook-secret'] || req.headers['X-Webhook-Secret'])) || '');
+  const got = String(
+    (req.headers && (req.headers['x-webhook-secret'] || req.headers['X-Webhook-Secret'])) || '',
+  );
   const a = Buffer.from(got);
   const b = Buffer.from(expected);
   return a.length === b.length && crypto.timingSafeEqual(a, b);
@@ -36,11 +38,19 @@ module.exports = async function handler(req, res) {
       const audience = status === 'qualified' ? 'designers' : 'front desk (human check)';
       const n = await sendTelegram(`[For ${audience}]\n` + rec.note);
       rec.notification = { ...n, audience };
-      rec.status = status === 'qualified'
-        ? (n.status === 'sent' ? 'designer notified' : 'awaiting designer')
-        : 'needs human check';
+      rec.status =
+        status === 'qualified'
+          ? n.status === 'sent'
+            ? 'designer notified'
+            : 'awaiting designer'
+          : 'needs human check';
     } else {
-      rec.notification = { channel: 'none', status: 'not sent', audience: 'none', detail: 'Unqualified: logged for front desk review only' };
+      rec.notification = {
+        channel: 'none',
+        status: 'not sent',
+        audience: 'none',
+        detail: 'Unqualified: logged for front desk review only',
+      };
       rec.status = 'logged, not routed';
     }
     await store.addRecord(rec);
@@ -52,7 +62,7 @@ module.exports = async function handler(req, res) {
       notification: rec.notification,
       storage: store.backend(),
       extraction: rec.extraction,
-      record: rec
+      record: rec,
     });
   } catch (e) {
     console.error('[vaani-webhook] failed', e);

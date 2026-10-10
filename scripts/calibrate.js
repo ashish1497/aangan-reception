@@ -29,7 +29,9 @@ function load(file) {
     console.error(`Folder not found: ${dir}`);
     process.exit(1);
   }
-  const files = fs.readdirSync(dir).filter((f) => /\.(txt|md|json)$/i.test(f) && f.toLowerCase() !== 'readme.md');
+  const files = fs
+    .readdirSync(dir)
+    .filter((f) => /\.(txt|md|json)$/i.test(f) && f.toLowerCase() !== 'readme.md');
   if (!files.length) {
     console.log(`No transcripts in ${dir}. Put the enquiry files there (see seed/README.md).`);
     return;
@@ -53,6 +55,8 @@ function load(file) {
   console.table(rows);
   console.log(counts, `of ${rows.length}`);
   const review = rows.filter((r) => r.status === 'grey' || r.second === 'near_miss');
-  console.log(`\nReview by hand (${review.length}): grey or near-miss. Compare each with Nikhil's qualified.md and adjust lib/rubric.js.`);
+  console.log(
+    `\nReview by hand (${review.length}): grey or near-miss. Compare each with Nikhil's qualified.md and adjust lib/rubric.js.`,
+  );
   review.forEach((r) => console.log(' -', r.file, r.status, r.second));
 })();

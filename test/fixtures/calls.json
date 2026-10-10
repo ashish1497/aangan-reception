@@ -1,0 +1,80 @@
+[
+  {
+    "name": "qualified home in Pune",
+    "payload": {
+      "callId": "reg-1",
+      "callerName": "Rohan Mehta",
+      "phone": "+919800000001",
+      "startedAt": "2026-10-06T05:00:00Z",
+      "durationSec": 240,
+      "transcript": "AI: Hello, this is Aangan Studio's assistant. Caller: Hi, I am Rohan. I want interiors for my 3 BHK flat in Baner, Pune. About 1400 sq ft. Budget around 15 lakh. We want to start in two months."
+    }
+  },
+  {
+    "name": "qualified office in Pune",
+    "payload": {
+      "callId": "reg-2",
+      "callerName": "Neha Kulkarni",
+      "phone": "+919800000002",
+      "startedAt": "2026-10-06T10:00:00Z",
+      "durationSec": 300,
+      "transcript": "Caller: We need our small office designed in Kothrud, Pune. It is 800 sq ft. Our budget is about 9 lakh."
+    }
+  },
+  {
+    "name": "outside service area",
+    "payload": {
+      "callId": "reg-3",
+      "callerName": "Sameer",
+      "phone": "+919800000003",
+      "startedAt": "2026-10-06T11:00:00Z",
+      "durationSec": 120,
+      "transcript": "Caller: I live in Nashik and want my flat of 1200 sq ft redone. Budget 10 lakh."
+    }
+  },
+  {
+    "name": "just under the minimum area (grey)",
+    "payload": {
+      "callId": "reg-4",
+      "callerName": "Priya",
+      "phone": "+919800000004",
+      "startedAt": "2026-10-06T12:00:00Z",
+      "durationSec": 150,
+      "transcript": "Caller: One BHK in Pune, only 350 sq ft. I want it redone. Budget 6 lakh."
+    }
+  },
+  {
+    "name": "area missing (grey, no price)",
+    "payload": {
+      "callId": "reg-5",
+      "callerName": "Anil",
+      "phone": "+919800000005",
+      "startedAt": "2026-10-06T13:00:00Z",
+      "durationSec": 90,
+      "transcript": "Caller: I have a flat in Pune and want to do the interiors. Not sure of the size."
+    }
+  },
+  {
+    "name": "hostile caller (grey, human)",
+    "payload": {
+      "callId": "reg-6",
+      "callerName": "Unknown",
+      "phone": "+919800000006",
+      "startedAt": "2026-10-06T14:00:00Z",
+      "durationSec": 45,
+      "transcript": "Caller: You people are useless idiots. Your service is a scam. Stupid bot. 1000 sq ft flat in Pune, just give me the price you fools."
+    }
+  },
+  {
+    "name": "after hours call booked on the call",
+    "payload": {
+      "callId": "reg-7",
+      "callerName": "Kavita Joshi",
+      "phone": "+919800000007",
+      "startedAt": "2026-10-06T17:30:00Z",
+      "durationSec": 280,
+      "bookedSlot": "2026-10-08 11:00 IST",
+      "transcript": "Caller: Hi, 2 BHK in Wakad, Pune, 950 sq ft. Budget 12 lakh. Can I book a call tomorrow?"
+    }
+  }
+]

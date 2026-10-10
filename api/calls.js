@@ -24,9 +24,14 @@ module.exports = async function handler(req, res) {
       price: r.price ? r.price.label : null,
       bookedSlot: r.bookedSlot,
       status: r.status,
-      afterHours: r.afterHours
+      afterHours: r.afterHours,
     }));
-    return sendJson(res, 200, { storage: store.backend(), demoShown: store.demoEnabled(q), count: rows.length, calls: rows });
+    return sendJson(res, 200, {
+      storage: store.backend(),
+      demoShown: store.demoEnabled(q),
+      count: rows.length,
+      calls: rows,
+    });
   } catch (e) {
     return sendJson(res, 500, { error: 'Could not load calls', detail: e.message });
   }
