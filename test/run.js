@@ -195,6 +195,20 @@ const CASES = [
     results.push('PASS  Gemini key rotates to the next key on HTTP 429'); passed++;
   }
 
+  // Second look rating for unqualified leads
+  {
+    const { scoreLead } = require('../lib/rubric');
+    const near = scoreLead({ projectType: 'home', city: 'Pune', areaSqft: 250 });
+    assert.strictEqual(near.status, 'unqualified');
+    assert.strictEqual(near.secondLook, 'near_miss');
+    const far = scoreLead({ projectType: 'home', city: 'Pune', areaSqft: 100 });
+    assert.strictEqual(far.secondLook, 'clear');
+    const outside = scoreLead({ projectType: 'home', city: 'Nashik', areaSqft: 1200 });
+    assert.strictEqual(outside.status, 'unqualified');
+    assert.strictEqual(outside.secondLook, 'clear');
+    results.push('PASS  second look: near miss on area, clear miss, outside city never near miss'); passed++;
+  }
+
   global.fetch = realFetch;
   console.log(results.join('\n'));
   console.log(`\n${passed} checks passed`);

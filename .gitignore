@@ -3,3 +3,7 @@ node_modules/
 .env.*
 !.env.example
 .vercel/
+
+# class seed data, not for a public repo
+seed/enquiries/*
+!seed/enquiries/.gitkeep
