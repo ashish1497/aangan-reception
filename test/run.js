@@ -1,7 +1,7 @@
 // Run: node test/run.js
 // Exercises the webhook handler directly with 6 sample transcripts.
 // Clears integration env vars first so Gemini, Telegram and Upstash are skipped.
-for (const k of ['GEMINI_API_KEY', 'TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID', 'UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_TOKEN', 'WEBHOOK_SECRET', 'DEMO_DATA']) delete process.env[k];
+for (const k of ['GEMINI_API_KEY', 'GOOGLE_GEMINI_KEY', 'GOOGLE_GEMINI_KEY_2', 'GOOGLE_GEMINI_KEY_3', 'TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID', 'UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_TOKEN', 'WEBHOOK_SECRET', 'DEMO_DATA']) delete process.env[k];
 
 const assert = require('assert');
 const webhook = require('../api/vaani-webhook');
@@ -173,6 +173,27 @@ const CASES = [
   assert.ok(/Gemini failed/.test(gres.body.extraction));
   assert.strictEqual(gres.body.qualification.status, 'qualified');
   results.push('PASS  Gemini error falls back to rules without failing the request'); passed++;
+
+  // Key rotation: first key is rate limited (429), second key works
+  {
+    const seenKeys = [];
+    const prev = global.fetch;
+    global.fetch = async (url, opts) => {
+      const k = opts.headers['x-goog-api-key'];
+      seenKeys.push(k);
+      if (k === 'key-one') return { ok: false, status: 429, json: async () => ({}) };
+      return { ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text: JSON.stringify({ name: 'Test Caller', projectType: 'home', city: 'Pune', areaSqft: 1200, brief: 'a\nb\nc\nd\ne' }) }] } }] }) };
+    };
+    process.env.GOOGLE_GEMINI_KEY = 'key-one';
+    process.env.GOOGLE_GEMINI_KEY_2 = 'key-two';
+    const { geminiExtract } = require('../lib/gemini');
+    const r = await geminiExtract('hello');
+    delete process.env.GOOGLE_GEMINI_KEY; delete process.env.GOOGLE_GEMINI_KEY_2;
+    global.fetch = prev;
+    assert.strictEqual(r.used, true);
+    assert.deepStrictEqual(seenKeys, ['key-one', 'key-two']);
+    results.push('PASS  Gemini key rotates to the next key on HTTP 429'); passed++;
+  }
 
   global.fetch = realFetch;
   console.log(results.join('\n'));
