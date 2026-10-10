@@ -1,5 +1,6 @@
 import { Card, Descriptions } from 'antd';
 import { inr, lakh } from '../lib/dashboardData';
+import Section from './Section';
 
 export default function CostValue({ stats }) {
   const c = stats.cost;
@@ -33,12 +34,19 @@ export default function CostValue({ stats }) {
     },
   ];
   return (
-    <Card title={<h2 className="card-h">Cost and value</h2>} data-testid="cost-value">
-      <Descriptions column={1} size="small" items={items} />
-      <p className="small muted">
+    <Section
+      id="cost"
+      title="Cost and value"
+      note="What the desk costs to run and what the qualified enquiries could be worth."
+      data-testid="cost-value"
+    >
+      <Card className="flat-card" bordered={false}>
+        <Descriptions className="kv" column={1} size="small" items={items} />
+      </Card>
+      <p className="note">
         Pipeline value is what the qualified enquiries are worth if every one of them converts, at Rs 8 to 14
         lakh a project. Conversion is tracked as projects close.
       </p>
-    </Card>
+    </Section>
   );
 }

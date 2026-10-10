@@ -12,25 +12,34 @@ export const metadata = {
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#f6f4ef',
+  themeColor: '#fafaf7',
 };
 
 const theme = {
   token: {
-    colorPrimary: '#8a4b2a',
-    colorLink: '#8a4b2a',
-    colorText: '#1f2328',
-    colorTextSecondary: '#4f555c',
-    colorTextTertiary: '#4f555c',
-    colorTextDescription: '#4f555c',
-    colorTextHeading: '#1f2328',
-    colorBgLayout: '#f6f4ef',
-    colorBorderSecondary: '#e3dfd6',
-    borderRadius: 8,
-    fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+    colorPrimary: '#1d4ed8',
+    colorLink: '#111111',
+    colorLinkHover: '#1d4ed8',
+    colorText: '#111111',
+    colorTextSecondary: '#4d4d48',
+    colorTextTertiary: '#4d4d48',
+    colorTextDescription: '#4d4d48',
+    colorTextHeading: '#111111',
+    colorBgLayout: '#fafaf7',
+    colorBorderSecondary: '#cfcfc8',
+    colorError: '#d7261e',
+    colorWarning: '#f2c230',
+    colorInfo: '#1d4ed8',
+    borderRadius: 2,
+    borderRadiusSM: 2,
+    borderRadiusLG: 2,
+    boxShadow: 'none',
+    boxShadowSecondary: 'none',
+    fontFamily: "'Helvetica Neue', Helvetica, Arial, system-ui, -apple-system, sans-serif",
   },
   components: {
-    Table: { headerColor: '#3d4247', headerBg: '#faf8f4', rowHoverBg: '#f6f4ef' },
+    Table: { headerColor: '#111111', headerBg: 'transparent', rowHoverBg: '#ffffff', borderColor: '#cfcfc8' },
+    Switch: { colorPrimary: '#111111', colorPrimaryHover: '#1d4ed8' },
   },
 };
 

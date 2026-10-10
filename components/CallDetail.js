@@ -1,16 +1,16 @@
 import Link from 'next/link';
-import { Card, Descriptions, Tag } from 'antd';
+import { Descriptions, Tag } from 'antd';
 import { ist } from '../lib/dashboardData';
 
-const SEVERITY = { violation: 'pill-unqualified', warning: 'pill-grey' };
+const SEVERITY = { violation: 'pill-review', warning: 'pill-grey' };
 
 export function EmptyDetail() {
   return (
-    <Card title={<h2 className="card-h">Call detail</h2>} data-testid="call-detail" className="detail">
-      <div className="detail-empty">
+    <div data-testid="call-detail" className="detail">
+      <p className="detail-empty">
         Pick a call to see what was said, the brief the designer gets and why it was decided that way.
-      </div>
-    </Card>
+      </p>
+    </div>
   );
 }
 
@@ -95,25 +95,20 @@ export default function CallDetail({ record: r, showLink = true }) {
   ];
 
   return (
-    <Card
-      className="detail"
-      data-testid="call-detail"
-      data-loaded="true"
-      title={
-        <h2 className="card-h">
-          Call detail {r.demo ? <Tag className="pill pill-demo">Sample call</Tag> : null}
-        </h2>
-      }
-      extra={
-        showLink ? (
+    <div className="detail" data-testid="call-detail" data-loaded="true">
+      <div className="detail-head">
+        <p className="detail-name">
+          {r.callerName || 'Unknown caller'}{' '}
+          {r.demo ? <Tag className="pill pill-demo">Sample call</Tag> : null}
+        </p>
+        {showLink ? (
           <Link href={`/calls/${encodeURIComponent(r.id)}`} prefetch={false}>
-            Full page
+            Open full page
           </Link>
-        ) : null
-      }
-    >
-      <Descriptions column={1} size="small" items={items} />
-      <p className="small muted">
+        ) : null}
+      </div>
+      <Descriptions className="kv" column={1} size="small" items={items} />
+      <p className="note">
         Estimates are for the designer only. The agent never quotes a price; pricing is covered at the
         consultation.
       </p>
@@ -161,6 +156,6 @@ export default function CallDetail({ record: r, showLink = true }) {
           <p className="muted">No transcript</p>
         )}
       </div>
-    </Card>
+    </div>
   );
 }

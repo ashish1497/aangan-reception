@@ -7,6 +7,21 @@ function Body(props) {
   return <tbody {...props} data-testid="call-rows" />;
 }
 
+// "Rs 26.1 lakh to Rs 50.8 lakh (basis)" becomes "Rs 26.1 to 50.8 lakh".
+function rangeOnly(text) {
+  const plain = String(text || '').replace(/\s*\(.*\)\s*$/, '');
+  const m = plain.match(/^Rs ([\d.]+) lakh to Rs ([\d.]+) lakh$/);
+  return m ? `Rs ${m[1]} to ${m[2]} lakh` : plain;
+}
+
+function Trunc({ text, className = '', ...rest }) {
+  return (
+    <span className={`trunc ${className}`} title={text} {...rest}>
+      {text}
+    </span>
+  );
+}
+
 export default function CallsTable({ rows, selected, linkBase }) {
   const { pending, setParams } = useNav();
   const columns = [
@@ -14,9 +29,10 @@ export default function CallsTable({ rows, selected, linkBase }) {
       title: 'Time (IST)',
       dataIndex: 'time',
       key: 'time',
+      width: '19%',
       render: (t, r) => (
         <>
-          {t}
+          <Trunc text={t} />
           {r.afterHours ? <div className="small muted">after hours</div> : null}
         </>
       ),
@@ -25,13 +41,21 @@ export default function CallsTable({ rows, selected, linkBase }) {
       title: 'Caller',
       dataIndex: 'callerName',
       key: 'caller',
+      width: '22%',
       render: (name, r) => (
         <>
-          <Link href={`${linkBase}call=${encodeURIComponent(r.id)}`} scroll={false} replace>
-            {name || 'Unknown'}
-          </Link>{' '}
-          {r.demo ? <Tag className="pill pill-demo">Sample call</Tag> : null}
-          <div className="small muted">{r.phone || ''}</div>
+          <span className="caller-line">
+            <Link
+              href={`${linkBase}call=${encodeURIComponent(r.id)}`}
+              scroll={false}
+              replace
+              title={name || 'Unknown'}
+            >
+              {name || 'Unknown'}
+            </Link>
+            {r.demo ? <Tag className="pill pill-demo">Sample call</Tag> : null}
+          </span>
+          <Trunc text={r.phone || ''} className="small muted" />
         </>
       ),
     },
@@ -39,6 +63,7 @@ export default function CallsTable({ rows, selected, linkBase }) {
       title: 'Qualification',
       dataIndex: 'qualification',
       key: 'qualification',
+      width: '14%',
       render: (q) => (
         <Tag className={`pill pill-${q}`} data-testid="row-qualification">
           {q}
@@ -49,22 +74,33 @@ export default function CallsTable({ rows, selected, linkBase }) {
       title: 'Internal estimate',
       dataIndex: 'estimateShort',
       key: 'estimate',
+      width: '18%',
       render: (e, r) => (
-        <span className="small" data-testid="row-estimate">
-          {e}
-          {r.internalEstimate ? <span className="muted"> (internal only)</span> : null}
+        <span
+          className="trunc small"
+          data-testid="row-estimate"
+          title={r.internalEstimate ? `${e} (internal only)` : e}
+        >
+          {rangeOnly(e)}
         </span>
       ),
     },
-    { title: 'Slot', dataIndex: 'bookedSlot', key: 'slot', render: (s) => s || '-' },
+    {
+      title: 'Slot',
+      dataIndex: 'bookedSlot',
+      key: 'slot',
+      width: '14%',
+      render: (s) => <Trunc text={s || '-'} />,
+    },
     {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
+      width: '13%',
       render: (s, r) => (
         <>
-          {r.needsReview ? <Tag className="pill pill-unqualified">needs review</Tag> : null}
-          {r.needsReview && s === 'needs-review' ? '' : s}
+          {r.needsReview ? <Tag className="pill pill-review">needs review</Tag> : null}
+          {r.needsReview && s === 'needs-review' ? '' : <Trunc text={s} />}
         </>
       ),
     },
@@ -77,6 +113,8 @@ export default function CallsTable({ rows, selected, linkBase }) {
         aria-label="Calls"
         rowKey="id"
         size="small"
+        tableLayout="fixed"
+        scroll={{ x: 760 }}
         columns={columns}
         dataSource={rows}
         pagination={rows.length > 20 ? { pageSize: 20, showSizeChanger: false } : false}
@@ -97,7 +135,12 @@ export default function CallsTable({ rows, selected, linkBase }) {
               image={Empty.PRESENTED_IMAGE_SIMPLE}
               description="No calls yet. A call shows up here seconds after it ends."
             >
-              <Button type="primary" data-testid="load-samples" onClick={() => setParams({ samples: '1' })}>
+              <Button
+                className="solid-btn"
+                type="primary"
+                data-testid="load-samples"
+                onClick={() => setParams({ samples: '1' })}
+              >
                 Load sample calls
               </Button>
             </Empty>

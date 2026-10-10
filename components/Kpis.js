@@ -1,26 +1,22 @@
 'use client';
-import { Card, Skeleton, Statistic } from 'antd';
 import { useNav } from './NavProvider';
 
 export default function Kpis({ tiles }) {
   const { pending } = useNav();
   return (
-    <section className="kpis" data-testid="kpis" aria-label="Key numbers">
+    <div className="kpis" data-testid="kpis">
       {tiles.map((t) => (
-        <Card key={t.key} size="small" data-testid={`kpi-${t.key}`}>
-          <Statistic
-            title={t.label}
-            value={t.value}
-            valueRender={(node) =>
-              pending ? (
-                <Skeleton.Input active size="small" style={{ width: 56 }} />
-              ) : (
-                <span data-testid={`kpi-${t.key}-value`}>{node}</span>
-              )
-            }
-          />
-        </Card>
+        <div key={t.key} className={`kpi kpi-${t.tone || 'black'}`} data-testid={`kpi-${t.key}`}>
+          <span className="kpi-label">{t.label}</span>
+          {pending ? (
+            <span className="kpi-skel" aria-hidden="true" />
+          ) : (
+            <span className="kpi-value" data-testid={`kpi-${t.key}-value`}>
+              {t.value}
+            </span>
+          )}
+        </div>
       ))}
-    </section>
+    </div>
   );
 }

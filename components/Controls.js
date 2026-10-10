@@ -24,9 +24,9 @@ export default function Controls({ showSamples, countSamples }) {
           data-testid="toggle-count-demo"
           onChange={(v) => setParams({ count: v ? '1' : null })}
         />
-        <span aria-hidden="true">Count sample calls in the numbers</span>
+        <span aria-hidden="true">Count samples in the numbers</span>
       </span>
-      <Button data-testid="refresh" onClick={refresh} loading={pending}>
+      <Button className="text-btn" type="text" data-testid="refresh" onClick={refresh} loading={pending}>
         Refresh
       </Button>
     </div>

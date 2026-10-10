@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getCall } from '../../../lib/dashboardData';
 import PageHeader from '../../../components/PageHeader';
 import CallDetail from '../../../components/CallDetail';
+import Section from '../../../components/Section';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,10 +20,19 @@ export default async function CallPage({ params }) {
   return (
     <>
       <PageHeader>
-        <Link href="/">Back to all calls</Link>
+        <Link href="/" className="back-link">
+          Back to all calls
+        </Link>
       </PageHeader>
-      <main id="main" className="page">
-        <CallDetail record={record} showLink={false} />
+      <main id="main" className="wrap">
+        <Section
+          id="detail"
+          className="row row-first"
+          title="Call detail"
+          note="What was said, the brief the designer gets and why it was decided that way."
+        >
+          <CallDetail record={record} showLink={false} />
+        </Section>
       </main>
     </>
   );
