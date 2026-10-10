@@ -35,7 +35,11 @@ def setUpModule():
     global SERVER
     if os.environ.get("BASE_URL"):
         return
-    env = {k: v for k, v in os.environ.items() if not k.startswith(("UPSTASH", "TELEGRAM", "GOOGLE_GEMINI", "GEMINI", "WEBHOOK"))}
+    # Blank (not delete) the integration variables: Next.js would otherwise load the real values from .env.
+    env = dict(os.environ)
+    for k in ("UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN", "TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID",
+              "GOOGLE_GEMINI_KEY", "GOOGLE_GEMINI_KEY_2", "GOOGLE_GEMINI_KEY_3", "GEMINI_API_KEY", "WEBHOOK_SECRET", "DEMO_DATA"):
+        env[k] = ""
     if not os.path.exists(os.path.join(ROOT, ".next", "BUILD_ID")):
         subprocess.run(["npx", "next", "build"], cwd=ROOT, env=env, check=True, stdout=subprocess.DEVNULL)
     SERVER = subprocess.Popen(["npx", "next", "start", "-p", str(PORT)], cwd=ROOT, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -140,6 +144,7 @@ class DashboardTests(unittest.TestCase):
         self.assertIn("Pipeline value if converted", panel)
         self.assertIn("Rs 8 to 14 lakh", panel)
         self.assertIn("Cost per call", panel)
+        self.assertIn("Rs 5.5/min", panel)
 
     # 8
     def test_08_product_copy_has_no_build_notes(self):

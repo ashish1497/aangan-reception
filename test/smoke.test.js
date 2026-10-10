@@ -35,8 +35,10 @@ test.before(async () => {
     'GOOGLE_GEMINI_KEY_3',
     'GEMINI_API_KEY',
     'WEBHOOK_SECRET',
+    'DEMO_DATA',
   ])
-    delete env[k];
+    // Set to empty (not deleted): Next.js would otherwise load the real values from .env.
+    env[k] = '';
   const root = path.join(__dirname, '..');
   if (!fs.existsSync(path.join(root, '.next', 'BUILD_ID')))
     execFileSync('npx', ['next', 'build'], { cwd: root, env, stdio: 'ignore' });

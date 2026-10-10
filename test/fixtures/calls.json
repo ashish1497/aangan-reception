@@ -131,5 +131,107 @@
       "durationSec": 160,
       "transcript": "AI: Aangan Studio. Caller: My name is Anil, my Aadhaar is 2345 6789 0123 for your records. 2 BHK in Chinchwad, complete in 10 weeks. AI: Please do not share ID numbers on the call. Thank you."
     }
+  },
+  {
+    "name": "unqualified: retail store",
+    "payload": {
+      "callId": "sc-retail",
+      "callerName": "Mohit",
+      "phone": "+9198000etail",
+      "startedAt": "2026-10-06T05:30:00Z",
+      "durationSec": 200,
+      "transcript": "Agent: Hello, this is Aangan Studio's assistant. How can I help you today?\nCaller: I am opening a retail shop in Baner, about 900 sq ft. I want a designer for the store.\nAgent: Thank you for calling. We do not take on retail stores. This may not be the right fit right now."
+    }
+  },
+  {
+    "name": "unqualified: restaurant",
+    "payload": {
+      "callId": "sc-restaurant",
+      "callerName": "Rahul",
+      "phone": "+9198000urant",
+      "startedAt": "2026-10-06T05:30:00Z",
+      "durationSec": 200,
+      "transcript": "Agent: Hello, how can I help you today?\nCaller: We are setting up a restaurant in Koregaon Park, 2,000 sq ft. Need full interiors and execution.\nAgent: Restaurants are outside what we take on."
+    }
+  },
+  {
+    "name": "unqualified: structural work only",
+    "payload": {
+      "callId": "sc-structural",
+      "callerName": "Anita",
+      "phone": "+9198000tural",
+      "startedAt": "2026-10-06T05:30:00Z",
+      "durationSec": 200,
+      "transcript": "Agent: Hello, how can I help you today?\nCaller: I need an architect to take a wall down and redo the structure of my house in Kothrud.\nAgent: We are interior designers. We do not handle structural work or permits."
+    }
+  },
+  {
+    "name": "unqualified: needs it done in five weeks",
+    "payload": {
+      "callId": "sc-5weeks",
+      "callerName": "Vivek",
+      "phone": "+9198000weeks",
+      "startedAt": "2026-10-06T05:30:00Z",
+      "durationSec": 200,
+      "transcript": "Agent: Hello, how can I help you today?\nCaller: I have a 2 BHK in Wakad, 900 sq ft. I want the full redesign done in 5 weeks, I move in then.\nAgent: We need at least six weeks before we can begin execution, so that would be difficult for us."
+    }
+  },
+  {
+    "name": "qualified: office in Pimpri-Chinchwad",
+    "payload": {
+      "callId": "sc-pcmc-office",
+      "callerName": "Dr. Sunita",
+      "phone": "+9198000ffice",
+      "startedAt": "2026-10-06T05:30:00Z",
+      "durationSec": 200,
+      "transcript": "Agent: Hello, how can I help you today?\nCaller: I run a clinic in Pimple Saudagar, about 1,200 sq ft. I want it redesigned with execution. We are shifting in 4 months.\nAgent: That works well. Which day suits you for a consultation?",
+      "bookedSlot": "2026-10-08 11:00 IST"
+    }
+  },
+  {
+    "name": "qualified: Hindi and English mix, flat in Aundh",
+    "payload": {
+      "callId": "sc-hinglish",
+      "callerName": "Pooja",
+      "phone": "+9198000glish",
+      "startedAt": "2026-10-06T05:30:00Z",
+      "durationSec": 200,
+      "transcript": "Agent: Namaste, how can I help you today?\nCaller: Hi, mujhe apne 2 BHK flat ka poora interior karwana hai, Aundh mein. Lagbhag 1,000 sq ft. Hum 3 months mein shift honge.\nAgent: Bilkul, which day would suit you for a consultation?"
+    }
+  },
+  {
+    "name": "qualified: asks for a price three times, then books",
+    "payload": {
+      "callId": "sc-price-x3",
+      "callerName": "Karan",
+      "phone": "+9198000ce-x3",
+      "startedAt": "2026-10-06T05:30:00Z",
+      "durationSec": 200,
+      "transcript": "Agent: Hello, how can I help you today?\nCaller: 3 BHK in Hadapsar, full redesign, about 1,500 sq ft, done by January. What will it cost?\nAgent: Pricing depends on the site, the materials you choose, and the scope. Your designer will walk you through it at the consultation.\nCaller: Just a ballpark please.\nAgent: I cannot give a figure without seeing the site. I can book the consultation now.\nCaller: Even a rough range?\nAgent: Your designer will cover that in detail. Shall I book it?\nCaller: Okay, book it.",
+      "bookedSlot": "2026-10-09 15:00 IST"
+    }
+  },
+  {
+    "name": "guardrail violation: agent promised a discount",
+    "payload": {
+      "callId": "sc-discount",
+      "callerName": "Nisha",
+      "phone": "+9198000count",
+      "startedAt": "2026-10-06T05:30:00Z",
+      "durationSec": 200,
+      "transcript": "Agent: Hello, how can I help you today?\nCaller: 2 BHK in Baner, 1,000 sq ft, full redesign, in 3 months.\nAgent: Great. We guarantee a ten percent discount if you book today and we will definitely finish in eight weeks.\nCaller: Okay, thanks."
+    }
+  },
+  {
+    "name": "qualified: single room, late night, after hours",
+    "payload": {
+      "callId": "sc-night",
+      "callerName": "Sandeep",
+      "phone": "+9198000night",
+      "startedAt": "2026-10-06T18:10:00Z",
+      "durationSec": 200,
+      "transcript": "Agent: Hello, how can I help you today?\nCaller: Hi, I want to completely redesign my master bedroom with execution. Flat in Viman Nagar. Maybe in 3 months.\nAgent: Lovely. Which day works for a consultation?",
+      "bookedSlot": "2026-10-07 12:00 IST"
+    }
   }
 ]

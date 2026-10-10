@@ -166,3 +166,14 @@ test('agent speaker names: Sai is a caller, not the AI', () => {
   assert.strictEqual(n.callerText, 'Flat in Aundh');
   assert.strictEqual(n.agentText, 'Thanks');
 });
+
+test('timeline: Hindi and English mix, "3 months mein"', () => {
+  const f = extractFields('Caller: Hum 3 months mein shift honge, 2 BHK flat Aundh mein', {});
+  assert.ok(f.timelineWeeks > 12 && f.timelineWeeks < 14);
+  assert.strictEqual(f.city, 'Pune');
+});
+
+test('timeline: a named month is counted from the call date', () => {
+  const f = extractFields('Caller: We want it done by March', { startedAt: '2026-09-02T06:00:00Z' });
+  assert.ok(f.timelineWeeks > 25 && f.timelineWeeks < 32);
+});
