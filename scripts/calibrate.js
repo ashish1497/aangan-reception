@@ -12,6 +12,20 @@ const fs = require('fs');
 const path = require('path');
 const { processCall } = require('../lib/process');
 
+const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
 const dir = process.argv[2] || 'seed/enquiries';
 const useGemini = process.argv.includes('--gemini');
 
@@ -21,7 +35,17 @@ function load(file) {
     const j = JSON.parse(raw);
     return { callId: path.basename(file), transcript: j.transcript || j.text || '' };
   }
-  return { callId: path.basename(file), transcript: raw };
+  // Drop a header line such as "T03 · Phone · 3 September · 4:15pm".
+  const head = raw.match(/^[TWF]\d{2}\s·[^\n]*\n/);
+  const body = raw.replace(/^[TWF]\d{2}\s·[^\n]*\n/, '');
+  let startedAt;
+  const d =
+    head &&
+    head[0].match(
+      /(\d{1,2})(?:[–-]\d{1,2})?\s+(January|February|March|April|May|June|July|August|September|October|November|December)/,
+    );
+  if (d) startedAt = new Date(Date.UTC(2026, MONTHS.indexOf(d[2]), Number(d[1]), 6)).toISOString();
+  return { callId: path.basename(file), transcript: body, startedAt };
 }
 
 (async () => {

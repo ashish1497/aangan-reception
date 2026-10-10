@@ -7,3 +7,7 @@ node_modules/
 # class seed data, not for a public repo
 seed/enquiries/*
 !seed/enquiries/.gitkeep
+
+# the enquiries file, wherever it lands
+*Enquiries*.pdf
+seed/enquiries/*
