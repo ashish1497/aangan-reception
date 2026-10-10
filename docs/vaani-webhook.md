@@ -41,3 +41,20 @@ qualified or grey, a Telegram note goes to the designer.
 
 Some platforms send only a call id and ask you to fetch the call. If the webhook returns 400 with
 `receivedKeys` that include an id but no transcript, the app needs a fetch step against Vaani's API.
+
+## If the Webhooks tab is disabled: use a Custom Tool
+
+When the Webhooks tab is greyed out, add a Custom Tool (Actions, then Custom Tools, then Add Custom Tool).
+
+- Name: `log_enquiry`
+- Method: POST
+- URL: `https://aangan-reception.vercel.app/api/vaani-webhook`
+- Header: `x-webhook-secret` = the value of `WEBHOOK_SECRET` (if headers are allowed)
+- When to use: once, at the end of every call, after the goodbye and before ending the call.
+- Parameters (all strings unless noted): `name`, `phone`, `email`, `project_type` (home or office), `scope`,
+  `location`, `area_sqft` (number), `timeline`, `budget`, `wants_execution` (yes or no), `decision_maker`,
+  `price_asked` (yes or no), `booked_slot`, `outcome` (booked, declined or callback), `summary`.
+
+No transcript is sent in this mode. The app turns these fields into a short caller-side transcript so the same
+five criteria apply. The checks that read the agent's own words (a price slip, a promise) cannot run, because
+the agent's lines are not sent. Use the Vaani dashboard transcript for those.

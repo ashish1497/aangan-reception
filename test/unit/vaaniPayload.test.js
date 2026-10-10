@@ -104,3 +104,30 @@ test('object phone or name fields are dropped, not stored as [object Object]', (
   });
   assert.strictEqual(typeof payload.phone, 'string');
 });
+
+test('custom tool fields with no transcript become a caller transcript', () => {
+  const { payload } = normaliseVaaniPayload({
+    name: 'Rohan',
+    phone: '+919800000001',
+    project_type: 'home',
+    scope: 'full redesign with execution',
+    location: 'Baner, Pune',
+    area_sqft: 1400,
+    timeline: 'in four months',
+    booked_slot: '2026-10-08 11:00 IST',
+  });
+  assert.match(payload.transcript, /Baner, Pune/);
+  assert.match(payload.transcript, /1400 sq ft/);
+  assert.match(payload.transcript, /in four months/);
+  assert.strictEqual(payload.bookedSlot, '2026-10-08 11:00 IST');
+});
+
+test('custom tool: wants_execution false is carried as a red flag phrase', () => {
+  const { payload } = normaliseVaaniPayload({ name: 'A', location: 'Aundh', wants_execution: 'no' });
+  assert.match(payload.transcript, /just looking for ideas/);
+});
+
+test('a real transcript wins over tool fields', () => {
+  const { payload } = normaliseVaaniPayload({ transcript: 'Caller: hello there', location: 'Baner' });
+  assert.strictEqual(payload.transcript, 'Caller: hello there');
+});
