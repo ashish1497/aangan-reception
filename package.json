@@ -1,0 +1,11 @@
+{
+  "name": "aangan-voice-desk",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Vaani voice AI webhook and dashboard for Aangan Studio incoming phone enquiries (Mesa School Case 03)",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "test": "node test/run.js",
+    "dev": "node dev-server.js"
+  }
+}

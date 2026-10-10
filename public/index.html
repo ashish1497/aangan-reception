@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aangan Voice Desk</title>
+<style>
+  :root {
+    --bg: #f6f4ef; --card: #ffffff; --ink: #1f2328; --muted: #646b73; --line: #e3dfd6;
+    --accent: #8a4b2a; --ok: #1f7a4d; --okbg: #e3f3ea; --warn: #8a6100; --warnbg: #fbf0d3;
+    --bad: #a23b3b; --badbg: #f7e1e1; --demo: #5b4b8a; --demobg: #ebe7f7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17181a; --card: #212327; --ink: #ececec; --muted: #a0a6ad; --line: #34373c;
+      --accent: #e0a37e; --ok: #7fd3a6; --okbg: #1d3a2b; --warn: #f0c96a; --warnbg: #3a3119;
+      --bad: #f09a9a; --badbg: #3d2222; --demo: #c3b6f0; --demobg: #2c2740;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { padding: 20px 16px 8px; max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline; justify-content: space-between; }
+  h1 { margin: 0; font-size: 22px; }
+  h1 small { display: block; font-size: 13px; color: var(--muted); font-weight: 400; }
+  h2 { font-size: 16px; margin: 0 0 10px; }
+  main { max-width: 1200px; margin: 0 auto; padding: 0 16px 40px; }
+  .banner { border: 1px solid var(--warn); background: var(--warnbg); color: var(--ink); border-radius: 8px; padding: 10px 12px; margin: 8px 0; font-size: 13px; }
+  .controls { display: flex; gap: 14px; flex-wrap: wrap; font-size: 14px; align-items: center; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin: 14px 0; }
+  .tile { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+  .tile .v { font-size: 26px; font-weight: 650; }
+  .tile .l { color: var(--muted); font-size: 13px; }
+  .grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 14px; }
+  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin-bottom: 14px; min-width: 0; }
+  .tablewrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover, tbody tr.sel { background: var(--bg); }
+  .pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .qualified { background: var(--okbg); color: var(--ok); }
+  .grey { background: var(--warnbg); color: var(--warn); }
+  .unqualified { background: var(--badbg); color: var(--bad); }
+  .demo { background: var(--demobg); color: var(--demo); }
+  .muted { color: var(--muted); }
+  .small { font-size: 12px; }
+  pre { white-space: pre-wrap; background: var(--bg); border-radius: 8px; padding: 10px; font: 13px/1.45 ui-monospace, Menlo, monospace; margin: 6px 0 12px; }
+  .tx p { margin: 4px 0; } .tx b { color: var(--accent); }
+  ul { padding-left: 18px; margin: 6px 0 12px; }
+  a { color: var(--accent); }
+  dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; margin: 0; font-size: 14px; }
+  dt { color: var(--muted); }
+  .empty { color: var(--muted); padding: 20px 0; text-align: center; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Aangan Voice Desk <small>Incoming phone enquiries answered by Vaani, Aangan Studio, Pune</small></h1>
+  <div class="controls">
+    <label><input type="checkbox" id="showDemo" checked> Show demo calls in table</label>
+    <label><input type="checkbox" id="countDemo"> Count demo calls in KPIs</label>
+    <button id="refresh" type="button">Refresh</button>
+  </div>
+</header>
+<main>
+  <div id="banners"></div>
+  <section class="tiles" id="tiles"></section>
+  <div class="grid">
+    <div>
+      <section class="card">
+        <h2>Calls</h2>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Time (IST)</th><th>Caller</th><th>Qualification</th><th>Price range</th><th>Slot</th><th>Status</th></tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </section>
+      <section class="card" id="costValue"></section>
+    </div>
+    <section class="card" id="detail"><h2>Call detail</h2><div class="empty">Select a call to see the transcript, brief and reasons.</div></section>
+  </div>
+</main>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var inr = function (n) { return 'Rs ' + Math.round(n).toLocaleString('en-IN'); };
+  var lakh = function (n) { return 'Rs ' + (n / 100000).toLocaleString('en-IN', { maximumFractionDigits: 1 }) + ' lakh'; };
+  var ist = function (iso) {
+    var d = new Date(iso); if (isNaN(d)) return esc(iso);
+    return d.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+  };
+  var selected = null;
+
+  function getJson(url) { return fetch(url, { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(url + ' ' + r.status); return r.json(); }); }
+
+  function tile(v, l) { return '<div class="tile"><div class="v">' + esc(v) + '</div><div class="l">' + esc(l) + '</div></div>'; }
+
+  function renderStats(s) {
+    $('tiles').innerHTML =
+      tile(s.callsAnswered, 'Calls answered') +
+      tile(s.answeredWithin5Min, 'Answered within 5 minutes') +
+      tile(s.qualified, 'Qualified') +
+      tile(s.grey, 'Grey (human check)') +
+      tile(s.unqualified, 'Unqualified') +
+      tile(s.bookedOnCall, 'Booked on the call') +
+      tile(s.afterHoursShare + '%', 'After-hours calls (outside 10am to 7pm)');
+    var b = [];
+    if (s.storage === 'memory') b.push('Storage is IN-MEMORY. On Vercel this is not durable: calls can vanish on a cold start. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.');
+    if (s.placeholders.rubric || s.placeholders.pricing) b.push('Qualification rules and per-sq-ft rates are PLACEHOLDERS until qualified.md and pricing.md are copied into lib/rubric.js and lib/pricing.js. Do not quote these numbers to clients.');
+    b.push(s.includesDemo ? 'KPIs INCLUDE synthetic demo calls.' : 'KPIs count real calls only. Demo calls are excluded.');
+    $('banners').innerHTML = b.map(function (t) { return '<div class="banner">' + esc(t) + '</div>'; }).join('');
+
+    var c = s.cost, v = s.value;
+    $('costValue').innerHTML =
+      '<h2>Cost and value</h2>' +
+      '<dl>' +
+      '<dt>Voice minutes</dt><dd>' + esc(c.totalVoiceMinutes) + ' min x ' + inr(c.voiceCostPerMin) + '/min <span class="pill grey">ASSUMPTION</span></dd>' +
+      '<dt>LLM per call</dt><dd>' + inr(c.llmCostPerCall) + ' <span class="pill grey">ASSUMPTION</span></dd>' +
+      '<dt>Total cost</dt><dd>' + inr(c.totalInr) + '</dd>' +
+      '<dt>Cost per call</dt><dd>' + inr(c.perCallInr) + '</dd>' +
+      '<dt>Qualified leads</dt><dd>' + esc(v.qualifiedLeads) + '</dd>' +
+      '<dt>Pipeline value if converted</dt><dd>' + lakh(v.pipelineLowInr) + ' to ' + lakh(v.pipelineHighInr) + '</dd>' +
+      '</dl>' +
+      '<p class="small muted">Cost rates are assumptions in lib/cost.js; replace them with real Vaani and Gemini pricing. ' +
+      'Pipeline value uses the case figure of Rs 8 to 14 lakh per project. ' + esc(v.caveat) + '</p>';
+  }
+
+  function renderRows(list) {
+    if (!list.calls.length) { $('rows').innerHTML = '<tr><td colspan="6" class="empty">No calls yet.</td></tr>'; return; }
+    $('rows').innerHTML = list.calls.map(function (r) {
+      return '<tr data-id="' + esc(r.id) + '"' + (r.id === selected ? ' class="sel"' : '') + '>' +
+        '<td>' + ist(r.startedAt) + (r.afterHours ? ' <span class="small muted">after hours</span>' : '') + '</td>' +
+        '<td>' + esc(r.callerName || 'Unknown') + (r.demo ? ' <span class="pill demo">DEMO DATA</span>' : '') + '<div class="small muted">' + esc(r.phone || '') + '</div></td>' +
+        '<td><span class="pill ' + esc(r.qualification) + '">' + esc(r.qualification) + '</span></td>' +
+        '<td>' + esc(r.price || 'not computed') + '</td>' +
+        '<td>' + esc(r.bookedSlot || '-') + '</td>' +
+        '<td>' + esc(r.status) + '</td></tr>';
+    }).join('');
+  }
+
+  function renderDetail(r) {
+    var f = r.fields, n = r.notification || {};
+    var tx = (r.transcript || []).map(function (l) { return '<p><b>' + esc(l.speaker) + ':</b> ' + esc(l.text) + '</p>'; }).join('');
+    $('detail').innerHTML =
+      '<h2>Call detail ' + (r.demo ? '<span class="pill demo">DEMO DATA</span>' : '') + '</h2>' +
+      '<dl>' +
+      '<dt>Caller</dt><dd>' + esc(r.callerName || 'Unknown') + ' ' + esc(r.phone || '') + '</dd>' +
+      '<dt>Started</dt><dd>' + ist(r.startedAt) + ', ' + Math.round(r.durationSec / 60 * 10) / 10 + ' min</dd>' +
+      '<dt>Qualification</dt><dd><span class="pill ' + esc(r.qualification.status) + '">' + esc(r.qualification.status) + '</span></dd>' +
+      '<dt>Space</dt><dd>' + esc(f.projectType || '?') + ', ' + esc(f.areaSqft ? f.areaSqft + ' sq ft' : 'area unknown') + ', ' + esc([f.locality, f.city].filter(Boolean).join(', ') || 'location unknown') + '</dd>' +
+      '<dt>Budget / timeline</dt><dd>' + esc(f.budgetText || 'not stated') + ' / ' + esc(f.timeline || 'not stated') + '</dd>' +
+      '<dt>Price range</dt><dd>' + esc(r.price ? r.price.label : 'not computed') + '</dd>' +
+      '<dt>Slot</dt><dd>' + esc(r.bookedSlot || 'none booked') + '</dd>' +
+      '<dt>Notification</dt><dd>' + esc((n.channel || 'none') + ': ' + (n.status || '-') + (n.audience ? ' to ' + n.audience : '') + (n.detail ? ' (' + n.detail + ')' : '')) + '</dd>' +
+      '<dt>Recording</dt><dd>' + (r.recordingUrl ? '<a href="' + esc(r.recordingUrl) + '" target="_blank" rel="noopener">Open recording</a>' : 'not provided') + '</dd>' +
+      '<dt>Extraction</dt><dd>' + esc(r.extraction) + '</dd>' +
+      '</dl>' +
+      (r.price ? '<p class="small muted">' + esc(r.price.disclaimer) + '</p>' : '') +
+      '<h2>Designer brief</h2><pre>' + esc(r.brief) + '</pre>' +
+      '<h2>Reasons</h2><ul>' + r.qualification.reasons.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' +
+      '<h2>Transcript</h2><div class="tx">' + (tx || '<p class="muted">No transcript</p>') + '</div>';
+  }
+
+  function load() {
+    var showDemo = $('showDemo').checked, countDemo = $('countDemo').checked;
+    Promise.all([
+      getJson('/api/stats' + (countDemo ? '?includeDemo=1' : '')),
+      getJson('/api/calls' + (showDemo ? '' : '?demo=0'))
+    ]).then(function (res) { renderStats(res[0]); renderRows(res[1]); })
+      .catch(function (e) { $('banners').innerHTML = '<div class="banner">Could not load data: ' + esc(e.message) + '</div>'; });
+  }
+
+  $('rows').addEventListener('click', function (e) {
+    var tr = e.target.closest('tr[data-id]'); if (!tr) return;
+    selected = tr.getAttribute('data-id');
+    Array.prototype.forEach.call(document.querySelectorAll('#rows tr'), function (x) { x.classList.toggle('sel', x === tr); });
+    getJson('/api/calls?id=' + encodeURIComponent(selected)).then(renderDetail)
+      .catch(function (err) { $('detail').innerHTML = '<h2>Call detail</h2><p>' + esc(err.message) + '</p>'; });
+    if (window.innerWidth < 860) $('detail').scrollIntoView({ behavior: 'smooth' });
+  });
+  $('showDemo').addEventListener('change', load);
+  $('countDemo').addEventListener('change', load);
+  $('refresh').addEventListener('click', load);
+  load();
+})();
+</script>
+</body>
+</html>
