@@ -1,7 +1,9 @@
-// Smoke test: start the real dev server and hit every public route once.
+// Smoke test: start the production Next.js server and hit every public route once.
+// Builds first if there is no .next build yet.
 const test = require('node:test');
 const assert = require('node:assert');
-const { spawn } = require('child_process');
+const { spawn, execFileSync } = require('child_process');
+const fs = require('fs');
 const path = require('path');
 
 const PORT = 3600 + Math.floor(Math.random() * 300);
@@ -9,7 +11,7 @@ const BASE = `http://127.0.0.1:${PORT}`;
 let server;
 
 async function waitUp() {
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < 300; i++) {
     try {
       const r = await fetch(BASE + '/');
       if (r.ok) return;
@@ -35,7 +37,10 @@ test.before(async () => {
     'WEBHOOK_SECRET',
   ])
     delete env[k];
-  server = spawn('node', [path.join(__dirname, '../dev-server.js')], { env, stdio: 'ignore' });
+  const root = path.join(__dirname, '..');
+  if (!fs.existsSync(path.join(root, '.next', 'BUILD_ID')))
+    execFileSync('npx', ['next', 'build'], { cwd: root, env, stdio: 'ignore' });
+  server = spawn('npx', ['next', 'start', '-p', String(PORT)], { cwd: root, env, stdio: 'ignore' });
   await waitUp();
 });
 test.after(() => server && server.kill());
@@ -48,6 +53,18 @@ test('smoke: dashboard page loads with the title and test ids', async () => {
   assert.match(html, /data-testid="kpis"/);
   assert.match(html, /Internal estimate/);
   assert.ok(!/Price range/.test(html));
+  assert.match(html, /\.ant-card/, 'antd styles are server rendered');
+});
+
+test('smoke: call detail page renders on the server', async () => {
+  const list = await (await fetch(BASE + '/api/calls?demo=1')).json();
+  const r = await fetch(BASE + '/calls/' + encodeURIComponent(list.calls[0].id));
+  const html = await r.text();
+  assert.strictEqual(r.status, 200);
+  assert.match(html, /data-testid="call-detail"/);
+  assert.match(html, /data-testid="detail-transcript"/);
+  // The page streams behind loading.js, so a missing call renders the not-found view.
+  assert.match(await (await fetch(BASE + '/calls/no-such-call')).text(), /Call not found/);
 });
 
 test('smoke: /api/stats returns the metric set', async () => {

@@ -16,22 +16,33 @@ This project covers **incoming phone calls only**. Vaani answers the call live, 
 6. **Output:** Telegram message to designers (qualified) or front desk (grey), stored record, dashboard at `/`.
 
 ```
-api/vaani-webhook.js  POST, called by Vaani after each call
-api/calls.js          GET list, GET ?id= detail (?demo=0 hides demo calls)
-api/stats.js          GET KPIs (?includeDemo=1 to count demo calls)
-lib/                  extract, gemini, rubric, pricing, cost, store, telegram, demo, process
-public/index.html     dashboard, vanilla JS, no CDN
-dev-server.js         local static + API server
-test/run.js           test script
+app/api/vaani-webhook/route.js  POST, called by Vaani after each call
+app/api/calls/route.js          GET list, GET ?id= detail (?demo=1 adds sample calls)
+app/api/stats/route.js          GET KPIs (?includeDemo=1 to count sample calls)
+lib/handlers/                   the (req, res) handlers behind those routes
+lib/nextAdapter.js              runs a (req, res) handler inside a Next.js route handler
+lib/dashboardData.js            data for the server-rendered pages, read straight from the store
+lib/                            extract, gemini, rubric, pricing, cost, store, telegram, demo, process
+app/page.js                     dashboard (server rendered, Ant Design)
+app/calls/[id]/page.js          one call, server rendered
+app/loading.js                  skeleton shown while a page streams
+components/                     dashboard pieces (KPI cards, calls table, call detail, cost and value)
 ```
 
-No npm dependencies and no build step. Node 18 or newer.
+Next.js 14 (App Router) with Ant Design 5. Styles are rendered on the server through
+`@ant-design/nextjs-registry`, so the first paint is complete without client JavaScript.
+Dashboard state lives in the URL: `?samples=1` shows sample calls, `?count=1` counts them in the
+numbers, `?call=<id>` opens a call in the side panel. Node 18 or newer.
 
 ## Run locally
 
 ```
-node test/run.js          # runs the tests
-node dev-server.js        # http://localhost:3000 (set PORT to change)
+npm install
+npm run dev               # http://localhost:3000, hot reload
+npm run build && npm start  # production build on http://localhost:3000
+npm run check             # prettier, eslint, unit + regression + smoke tests
+npm run test:e2e          # Selenium against `next start` (builds first if needed)
+npm run lighthouse        # builds, starts on :3900, prints mobile and desktop scores
 ```
 
 Send a test call:
@@ -65,15 +76,20 @@ All are optional. With none set, the app runs on rules only, skips Telegram, and
 2. The agent must never say a price, range or per-sq-ft figure. The only answer to a pricing question is the scripted line in `policy/pricing.md`. Calls where the agent slips are flagged for review on the dashboard.
 3. Set the post-call webhook URL to `https://<your-vercel-domain>/api/vaani-webhook`, method POST, JSON body.
 4. Add header `x-webhook-secret: <same value as WEBHOOK_SECRET>`.
-5. Map Vaani's post-call fields to the input above. **The field names here are assumptions; check them against Vaani's webhook docs** and adjust `api/vaani-webhook.js` if they differ. `transcript` can be a string (`Caller: ...` lines) or an array of `{speaker, text}`. An optional `answeredAfterSec` is read if Vaani reports ring time; otherwise a live Vaani pickup counts as answered within 5 minutes.
+5. Map Vaani's post-call fields to the input above. **The field names here are assumptions; check them against Vaani's webhook docs** and adjust `lib/handlers/vaani-webhook.js` if they differ. `transcript` can be a string (`Caller: ...` lines) or an array of `{speaker, text}`. An optional `answeredAfterSec` is read if Vaani reports ring time; otherwise a live Vaani pickup counts as answered within 5 minutes.
 
-## Deploy (not done yet; run these yourself)
+## Deploy
+
+`vercel.json` sets the framework to Next.js, so Vercel builds with `next build` and serves the
+pages and the `/api/*` route handlers. In the Vercel project settings the Framework Preset should
+read Next.js (vercel.json makes this automatic). The webhook URL stays `/api/vaani-webhook`.
+
+Ship a preview first, check it, then promote:
 
 ```
-gh auth login
-gh repo create aangan-voice-desk --public --source=. --push
-vercel login
-vercel --prod
+vercel                      # preview deployment from this branch
+# open the preview URL: dashboard loads, toggles work, POST a test call to <preview>/api/vaani-webhook
+vercel --prod               # only after the preview checks out
 vercel env add WEBHOOK_SECRET production
 vercel env add GEMINI_API_KEY production
 vercel env add TELEGRAM_BOT_TOKEN production
@@ -105,11 +121,10 @@ Out of scope for this build. Both could feed the same pipeline: a WhatsApp Busin
 | --------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Unit                  | `npm run test:unit`       | rubric, pricing, guardrails, cost, extraction, Gemini key rotation, Telegram, webhook, calls and stats handlers                                                                    |
 | Regression            | `npm run test:regression` | 7 fixed calls (`test/fixtures/calls.json`) must keep the reviewed outcomes in `test/fixtures/golden.json`. Update with `node scripts/make-golden.js` only after reviewing a change |
-| Smoke                 | `npm run test:smoke`      | starts the real server and hits the page and every API route once                                                                                                                  |
-| End to end (Selenium) | `npm run test:e2e`        | 10 browser tests of the dashboard (Chrome, headless). Needs `pip install selenium`. Set `BASE_URL` to test a deployed copy                                                         |
-| Legacy script         | `npm run test:legacy`     | the original 14-check script                                                                                                                                                       |
+| Smoke                 | `npm run test:smoke`      | starts `next start` (building first if needed) and hits the dashboard, a call page and every API route once                                                                        |
+| End to end (Selenium) | `npm run test:e2e`        | 12 browser tests of the dashboard against `next start` (Chrome, headless). Needs `pip install selenium`. Set `BASE_URL` to test a deployed copy                                    |
 | Everything            | `npm run check`           | prettier check, eslint, then all tests except Selenium                                                                                                                             |
 
-Every dashboard element has a `data-testid`, and `<body>` gets `data-ready="true"` once data has loaded, so Selenium waits are explicit.
+Every dashboard element has a `data-testid`. `<body>` gets `data-ready="true"` after hydration and loses it while a toggle or refresh is re-rendering on the server, so Selenium waits are explicit.
 Tests clear all integration env vars first and block the network, so they never call Vaani, Gemini, Telegram or Upstash.
 Format with `npm run format`, lint with `npm run lint`.

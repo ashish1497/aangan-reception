@@ -1,7 +1,7 @@
 """Selenium end-to-end tests for the Aangan Voice Desk dashboard.
 
 Run:  python3 -m pip install selenium   (or: uv run --with selenium python test/e2e/test_dashboard.py)
-      python3 test/e2e/test_dashboard.py            (starts its own dev server)
+      python3 test/e2e/test_dashboard.py            (builds once if needed, then runs `next start`)
       BASE_URL=https://your-app.vercel.app python3 test/e2e/test_dashboard.py   (test a deployed copy)
 
 Every element is found by data-testid, and the page sets data-ready="true" on <body>
@@ -36,15 +36,16 @@ def setUpModule():
     if os.environ.get("BASE_URL"):
         return
     env = {k: v for k, v in os.environ.items() if not k.startswith(("UPSTASH", "TELEGRAM", "GOOGLE_GEMINI", "GEMINI", "WEBHOOK"))}
-    env["PORT"] = str(PORT)
-    SERVER = subprocess.Popen(["node", os.path.join(ROOT, "dev-server.js")], env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    for _ in range(50):
+    if not os.path.exists(os.path.join(ROOT, ".next", "BUILD_ID")):
+        subprocess.run(["npx", "next", "build"], cwd=ROOT, env=env, check=True, stdout=subprocess.DEVNULL)
+    SERVER = subprocess.Popen(["npx", "next", "start", "-p", str(PORT)], cwd=ROOT, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    for _ in range(150):
         try:
             urllib.request.urlopen(BASE + "/", timeout=1)
             return
         except Exception:
             time.sleep(0.1)
-    raise RuntimeError("dev server did not start")
+    raise RuntimeError("next server did not start")
 
 
 def tearDownModule():
@@ -192,6 +193,16 @@ class DashboardTests(unittest.TestCase):
         guards = self.driver.find_element(*tid("detail-guardrails")).text
         self.assertIn("Agent said a price", guards)
         self.assertIn("never quoted to the client", self.driver.find_element(*tid("detail-estimate")).text)
+
+    # 12
+    def test_12_call_detail_page_is_server_rendered(self):
+        self.driver.get(BASE + "/?samples=1")
+        self.ready()
+        call_id = self.driver.find_elements(*tid("call-row"))[0].get_attribute("data-id")
+        self.driver.get(BASE + "/calls/" + call_id)
+        self.ready()
+        self.assertEqual(self.driver.find_element(*tid("call-detail")).get_attribute("data-loaded"), "true")
+        self.assertTrue(self.driver.find_element(*tid("detail-transcript")).text.strip())
 
     # 10
     def test_10_no_horizontal_scroll_on_a_phone_width(self):

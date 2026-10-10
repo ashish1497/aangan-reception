@@ -4,3 +4,4 @@ seed/enquiries
 package-lock.json
 # Policy text is Nikhil's own wording; keep it exactly as written
 policy/*.md
+.next
