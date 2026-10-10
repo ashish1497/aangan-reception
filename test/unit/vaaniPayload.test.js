@@ -131,3 +131,8 @@ test('a real transcript wins over tool fields', () => {
   const { payload } = normaliseVaaniPayload({ transcript: 'Caller: hello there', location: 'Baner' });
   assert.strictEqual(payload.transcript, 'Caller: hello there');
 });
+
+test('synthetic flag is set only when the transcript was built from tool fields', () => {
+  assert.strictEqual(normaliseVaaniPayload({ location: 'Baner', name: 'A' }).synthetic, true);
+  assert.strictEqual(normaliseVaaniPayload({ transcript: 'Caller: hi' }).synthetic, false);
+});
