@@ -50,13 +50,24 @@ function load(file) {
       city: rec.fields.city || '?',
       area: rec.fields.areaSqft ?? '?',
       budget: rec.fields.budgetLakh ?? '?',
+      weeks: rec.fields.timelineWeeks ?? '?',
+      '1 real': q.criteria.realProject.result,
+      '2 area': q.criteria.serviceArea.result,
+      '3 time': q.criteria.timeline.result,
+      '4 budget': q.criteria.budget.result,
+      '5 decider': q.criteria.decisionMaker.result,
+      guard: rec.guardrails.flags
+        .filter((g) => g.severity !== 'info')
+        .map((g) => g.code)
+        .join(' '),
+      ask: q.nextQuestion || '',
     });
   }
   console.table(rows);
   console.log(counts, `of ${rows.length}`);
   const review = rows.filter((r) => r.status === 'grey' || r.second === 'near_miss');
   console.log(
-    `\nReview by hand (${review.length}): grey or near-miss. Compare each with Nikhil's qualified.md and adjust policy/rubric.json.`,
+    `\nReview by hand (${review.length}): grey or near-miss. Compare each with Nikhil's qualified.md; numbers live in policy/rubric.json.`,
   );
   review.forEach((r) => console.log(' -', r.file, r.status, r.second));
 })();

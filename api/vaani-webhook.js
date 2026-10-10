@@ -53,12 +53,16 @@ module.exports = async function handler(req, res) {
       };
       rec.status = 'logged, not routed';
     }
+    // A guardrail violation (the agent slipped) always needs a person to review the call.
+    // Qualification is left as it is.
+    if (rec.guardrails && rec.guardrails.needsReview) rec.status = 'needs-review';
     await store.addRecord(rec);
     return sendJson(res, 200, {
       ok: true,
       id: rec.id,
       qualification: rec.qualification,
-      price: rec.price,
+      internalEstimate: rec.internalEstimate,
+      guardrails: rec.guardrails,
       notification: rec.notification,
       storage: store.backend(),
       extraction: rec.extraction,

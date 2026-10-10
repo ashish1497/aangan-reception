@@ -273,7 +273,7 @@
                     <th>Time (IST)</th>
                     <th>Caller</th>
                     <th>Qualification</th>
-                    <th>Price range</th>
+                    <th>Internal estimate</th>
                     <th>Slot</th>
                     <th>Status</th>
                   </tr>
@@ -352,7 +352,8 @@
             tile(s.unqualified, 'Closed politely', 'unqualified') +
             tile(s.nearMiss, 'Near misses to double-check', 'near-miss') +
             tile(s.bookedOnCall, 'Booked before the call ended', 'booked') +
-            tile(s.afterHoursShare + '%', 'Calls outside 10am to 7pm', 'after-hours-share');
+            tile(s.afterHoursShare + '%', 'Calls outside 10am to 7pm', 'after-hours-share') +
+            tile(s.callsNeedingReview || 0, 'Agent slips to review', 'guardrail');
           var b = [];
           if (s.storage === 'memory')
             b.push('Calls are held in memory and will reset when the server restarts.');
@@ -423,14 +424,16 @@
                 '">' +
                 esc(r.qualification) +
                 '</span></td>' +
-                '<td>' +
-                esc(r.price || 'not computed') +
+                '<td class="small" data-testid="row-estimate">' +
+                esc(r.internalEstimate ? r.internalEstimate.replace(/^[^:]*:\s*/, '') : 'not computed') +
+                (r.internalEstimate ? '<div class="muted">internal only</div>' : '') +
                 '</td>' +
                 '<td>' +
                 esc(r.bookedSlot || '-') +
                 '</td>' +
                 '<td>' +
-                esc(r.status) +
+                (r.needsReview ? '<span class="pill unqualified">needs review</span> ' : '') +
+                esc(r.needsReview && r.status === 'needs-review' ? '' : r.status) +
                 '</td></tr>'
               );
             })
@@ -439,7 +442,8 @@
 
         function renderDetail(r) {
           var f = r.fields,
-            n = r.notification || {};
+            n = r.notification || {},
+            guards = (r.guardrails && r.guardrails.flags) || [];
           var tx = (r.transcript || [])
             .map(function (l) {
               return '<p><b>' + esc(l.speaker) + ':</b> ' + esc(l.text) + '</p>';
@@ -477,9 +481,18 @@
             ' / ' +
             esc(f.timeline || 'not stated') +
             '</dd>' +
-            '<dt>Price range</dt><dd>' +
-            esc(r.price ? r.price.label : 'not computed') +
+            '<dt>Internal estimate</dt><dd data-testid="detail-estimate">' +
+            esc(
+              r.internalEstimate
+                ? r.internalEstimate.label
+                : 'Internal estimate, never quoted to the client: not computed',
+            ) +
             '</dd>' +
+            (r.qualification.nextQuestion
+              ? '<dt>Ask the caller</dt><dd data-testid="detail-next-question">' +
+                esc(r.qualification.nextQuestion) +
+                '</dd>'
+              : '') +
             '<dt>Slot</dt><dd>' +
             esc(r.bookedSlot || 'none booked') +
             '</dd>' +
@@ -501,7 +514,7 @@
             esc(r.extraction) +
             '</dd>' +
             '</dl>' +
-            (r.price ? '<p class="small muted">' + esc(r.price.disclaimer) + '</p>' : '') +
+            '<p class="small muted">Estimates are for the designer only. The agent never quotes a price; pricing is covered at the consultation.</p>' +
             '<h2>Designer brief</h2><pre data-testid="detail-brief">' +
             esc(r.brief) +
             '</pre>' +
@@ -512,6 +525,36 @@
               })
               .join('') +
             '</ul>' +
+            ((r.qualification.notes || []).length
+              ? '<h2>Handoff notes</h2><ul data-testid="detail-notes">' +
+                r.qualification.notes
+                  .map(function (x) {
+                    return '<li>' + esc(x) + '</li>';
+                  })
+                  .join('') +
+                '</ul>'
+              : '') +
+            '<h2>Guardrail flags</h2><div data-testid="detail-guardrails">' +
+            (guards.length
+              ? '<ul>' +
+                guards
+                  .map(function (g) {
+                    var cls =
+                      g.severity === 'violation' ? 'unqualified' : g.severity === 'warning' ? 'grey' : 'demo';
+                    return (
+                      '<li><span class="pill ' +
+                      cls +
+                      '">' +
+                      esc(g.severity) +
+                      '</span> ' +
+                      esc(g.text) +
+                      '</li>'
+                    );
+                  })
+                  .join('') +
+                '</ul>'
+              : '<p class="muted">No flags on this call.</p>') +
+            '</div>' +
             '<h2>Transcript</h2><div class="tx" data-testid="detail-transcript">' +
             (tx || '<p class="muted">No transcript</p>') +
             '</div>';

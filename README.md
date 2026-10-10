@@ -4,14 +4,14 @@ Mesa School, Case 03: Aangan Studio unanswered enquiries. A voice AI desk built 
 
 Aangan Studio (interior design for homes and small offices, Pune, 60 people, 14 designers, founder Nikhil Deshpande) gets about 200 enquiries a month. About 48% get no response within 48 hours, about 33% arrive outside 10am to 7pm, and the front desk is 2 people. The case says an enquiry answered within an hour converts at 4x the rate of one answered next day. Nikhil wants every enquiry answered within 5 minutes, day or night, and worthwhile enquiries to reach designers with everything already asked.
 
-This project covers **incoming phone calls only**. Vaani answers the call live, asks the qualifying questions, and when the call ends it posts the call to this app. The app extracts the details, scores the lead, attaches an indicative price range, notifies designers on Telegram, stores the record, and shows everything on a dashboard for Nikhil and the front desk.
+This project covers **incoming phone calls only**. Vaani answers the call live, asks the qualifying questions, and when the call ends it posts the call to this app. The app extracts the details, scores the lead against Nikhil's five criteria, checks the agent's own lines with guardrails, attaches an internal estimate for the designer only (never quoted to the client), notifies designers on Telegram, stores the record, and shows everything on a dashboard for Nikhil and the front desk.
 
 ## Architecture
 
 1. **Trigger:** a caller rings Aangan Studio; Vaani answers and, when the call ends, POSTs to `/api/vaani-webhook`.
 2. **Input:** call JSON `{callId, callerName, phone, startedAt, durationSec, transcript, recordingUrl, bookedSlot?}`.
-3. **Context:** qualification rubric (`lib/rubric.js`), per-sq-ft pricing (`lib/pricing.js`), cost assumptions (`lib/cost.js`).
-4. **Processing:** regex and keyword extraction, rubric scoring (qualified, grey, unqualified), indicative price range, handoff note.
+3. **Context:** policy in `policy/qualified.md`, `policy/services.md`, `policy/pricing.md`; their numbers in `policy/rubric.json`. Code: rubric (`lib/rubric.js`), internal pricing (`lib/pricing.js`), guardrails (`lib/guardrails.js`), cost (`lib/cost.js`).
+4. **Processing:** PII redaction and guardrails, regex and keyword extraction, five-criteria scoring (qualified, grey with one question to ask, unqualified), internal estimate (designer only), handoff note.
 5. **AI:** Vaani runs the conversation; optional Gemini fills gaps in extraction and writes a 5-line designer brief, falling back to rules on any error.
 6. **Output:** Telegram message to designers (qualified) or front desk (grey), stored record, dashboard at `/`.
 
@@ -61,8 +61,8 @@ All are optional. With none set, the app runs on rules only, skips Telegram, and
 
 ## Configure the Vaani agent
 
-1. In the Vaani agent, script the questions the rubric needs: name, home or office, locality, carpet area in sq ft, budget, timeline, preferred callback time. Offer a slot if Vaani supports booking.
-2. Tell the agent to give price only as an indicative range and to say it "varies by site".
+1. In the Vaani agent, script the questions the rubric needs: what they want done (design and execution), locality, when they need it complete, whether they decide. Do not probe for budget. Offer a slot if Vaani supports booking.
+2. The agent must never say a price, range or per-sq-ft figure. The only answer to a pricing question is the scripted line in `policy/pricing.md`. Calls where the agent slips are flagged for review on the dashboard.
 3. Set the post-call webhook URL to `https://<your-vercel-domain>/api/vaani-webhook`, method POST, JSON body.
 4. Add header `x-webhook-secret: <same value as WEBHOOK_SECRET>`.
 5. Map Vaani's post-call fields to the input above. **The field names here are assumptions; check them against Vaani's webhook docs** and adjust `api/vaani-webhook.js` if they differ. `transcript` can be a string (`Caller: ...` lines) or an array of `{speaker, text}`. An optional `answeredAfterSec` is read if Vaani reports ring time; otherwise a live Vaani pickup counts as answered within 5 minutes.
@@ -89,7 +89,7 @@ Out of scope for this build. Both could feed the same pipeline: a WhatsApp Busin
 
 ## Limitations and TODO
 
-- **Policy values.** The thresholds and rates in `policy/rubric.json` are defaults written for this desk from the case facts. If Nikhil's own `qualified.md` and `pricing.md` say something different, change that file to match.
+- **Policy values.** `policy/rubric.json` holds the numbers from Nikhil's `qualified.md`, `services.md` and `pricing.md`. If those files change, change this one to match.
 - **Vaani payload field names** must be checked against Vaani's docs.
 - **Storage durability.** Without Upstash, records live in serverless memory and will disappear. Set the Upstash variables before going live.
 - **Cost figures are assumptions.** Replace `VOICE_COST_PER_MIN` and `LLM_COST_PER_CALL` with real Vaani and Gemini pricing.
@@ -103,7 +103,7 @@ Out of scope for this build. Both could feed the same pipeline: a WhatsApp Busin
 
 | Layer                 | Command                   | What it covers                                                                                                                                                                     |
 | --------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Unit                  | `npm run test:unit`       | rubric, pricing, cost, extraction, Gemini key rotation, Telegram, webhook, calls and stats handlers                                                                                |
+| Unit                  | `npm run test:unit`       | rubric, pricing, guardrails, cost, extraction, Gemini key rotation, Telegram, webhook, calls and stats handlers                                                                    |
 | Regression            | `npm run test:regression` | 7 fixed calls (`test/fixtures/calls.json`) must keep the reviewed outcomes in `test/fixtures/golden.json`. Update with `node scripts/make-golden.js` only after reviewing a change |
 | Smoke                 | `npm run test:smoke`      | starts the real server and hits the page and every API route once                                                                                                                  |
 | End to end (Selenium) | `npm run test:e2e`        | 10 browser tests of the dashboard (Chrome, headless). Needs `pip install selenium`. Set `BASE_URL` to test a deployed copy                                                         |

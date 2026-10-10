@@ -85,7 +85,7 @@ class DashboardTests(unittest.TestCase):
     def test_02_all_kpi_tiles_render(self):
         self.open()
         keys = ["calls", "within-5-min", "within-5-min-share", "qualified", "grey", "unqualified",
-                "near-miss", "booked", "after-hours-share"]
+                "near-miss", "booked", "after-hours-share", "guardrail"]
         for k in keys:
             self.assertTrue(self.driver.find_element(*tid(f"kpi-{k}")).is_displayed(), k)
             self.assertNotEqual(self.kpi(k), "")
@@ -121,6 +121,7 @@ class DashboardTests(unittest.TestCase):
         self.assertTrue(self.driver.find_element(*tid("detail-brief")).text.strip())
         self.assertGreater(len(self.driver.find_elements(By.CSS_SELECTOR, '[data-testid="detail-reasons"] li')), 0)
         self.assertTrue(self.driver.find_element(*tid("detail-transcript")).text.strip())
+        self.assertTrue(self.driver.find_element(*tid("detail-guardrails")).is_displayed())
 
     # 6
     def test_06_hiding_sample_calls_empties_the_table(self):
@@ -155,7 +156,7 @@ class DashboardTests(unittest.TestCase):
         body = json.dumps({
             "callId": "e2e-1", "callerName": "Selenium Caller", "phone": "+910000000001",
             "startedAt": "2026-10-06T05:00:00Z", "durationSec": 180,
-            "transcript": "Caller: I want my 2 BHK flat in Pune redone. 1000 sq ft. Budget 10 lakh.",
+            "transcript": "Caller: I want my 2 BHK flat in Baner, Pune fully redone with execution. 1000 sq ft. Budget 25 lakh. Complete in three months.",
         }).encode()
         req = urllib.request.Request(BASE + "/api/vaani-webhook", data=body, headers={"content-type": "application/json"})
         urllib.request.urlopen(req, timeout=10)
@@ -168,6 +169,29 @@ class DashboardTests(unittest.TestCase):
         self.ready()
         self.assertEqual(self.kpi("calls"), "1")
         self.assertEqual(self.kpi("qualified"), "1")
+
+    # 11
+    def test_11_price_column_is_internal_and_agent_slip_is_flagged(self):
+        body = json.dumps({
+            "callId": "e2e-slip", "callerName": "Slip Caller", "phone": "+910000000002",
+            "startedAt": "2026-10-06T06:00:00Z", "durationSec": 120,
+            "transcript": "Caller: 2 BHK in Aundh, 900 sq ft, done in three months. How much? AI: It will be around Rs 15 lakh.",
+        }).encode()
+        req = urllib.request.Request(BASE + "/api/vaani-webhook", data=body, headers={"content-type": "application/json"})
+        urllib.request.urlopen(req, timeout=10)
+        self.open()
+        headers = self.driver.find_element(By.CSS_SELECTOR, "table thead").text.lower()
+        self.assertIn("internal estimate", headers)
+        self.assertNotIn("price range", headers)
+        self.assertEqual(self.kpi("guardrail"), "1")
+        rows = [r for r in self.driver.find_elements(*tid("call-row")) if "Slip Caller" in r.text]
+        self.assertEqual(len(rows), 1)
+        self.assertIn("needs review", rows[0].text.lower())
+        rows[0].click()
+        self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, '[data-testid="call-detail"][data-loaded="true"]')))
+        guards = self.driver.find_element(*tid("detail-guardrails")).text
+        self.assertIn("Agent said a price", guards)
+        self.assertIn("never quoted to the client", self.driver.find_element(*tid("detail-estimate")).text)
 
     # 10
     def test_10_no_horizontal_scroll_on_a_phone_width(self):

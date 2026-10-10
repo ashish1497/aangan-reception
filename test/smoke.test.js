@@ -46,6 +46,8 @@ test('smoke: dashboard page loads with the title and test ids', async () => {
   assert.strictEqual(r.status, 200);
   assert.match(html, /Aangan Voice Desk/);
   assert.match(html, /data-testid="kpis"/);
+  assert.match(html, /Internal estimate/);
+  assert.ok(!/Price range/.test(html));
 });
 
 test('smoke: /api/stats returns the metric set', async () => {
@@ -63,6 +65,8 @@ test('smoke: /api/stats returns the metric set', async () => {
     'afterHoursShare',
     'cost',
     'value',
+    'guardrailViolations',
+    'callsNeedingReview',
   ])
     assert.ok(k in s, 'missing ' + k);
 });
@@ -88,7 +92,7 @@ test('smoke: webhook accepts a call and the stats move', async () => {
       phone: '+910000000000',
       startedAt: new Date().toISOString(),
       durationSec: 100,
-      transcript: 'Caller: 2 BHK in Pune, 1000 sq ft, budget 10 lakh',
+      transcript: 'Caller: 2 BHK in Baner, 1000 sq ft, budget 25 lakh, complete in three months',
     }),
   });
   assert.strictEqual(r.status, 200);

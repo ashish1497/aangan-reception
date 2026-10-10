@@ -16,6 +16,12 @@ function computeStats(records) {
     grey: count((r) => r.qualification.status === 'grey'),
     unqualified: count((r) => r.qualification.status === 'unqualified'),
     nearMiss: count((r) => r.qualification.secondLook === 'near_miss'),
+    guardrailViolations: records.reduce(
+      (s, r) =>
+        s + ((r.guardrails && r.guardrails.flags) || []).filter((g) => g.severity === 'violation').length,
+      0,
+    ),
+    callsNeedingReview: count((r) => !!(r.guardrails && r.guardrails.needsReview)),
     needsHumanReview: count(
       (r) => r.qualification.status === 'grey' || r.qualification.secondLook === 'near_miss',
     ),

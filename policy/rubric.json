@@ -1,13 +1,90 @@
 {
-  "serviceCities": ["pune", "pimpri-chinchwad"],
-  "minAreaSqft": { "home": 400, "office": 300 },
-  "minBudgetLakh": 5,
-  "greyBand": 0.2,
-  "nearMissRatio": 0.5,
-  "requiredFields": ["projectType", "city", "areaSqft"],
-  "ratePerSqft": {
-    "home": { "low": 1000, "high": 2000 },
-    "office": { "low": 900, "high": 1800 }
+  "_about": "Numbers and word lists for the rubric. Sources: policy/qualified.md (the five criteria), policy/services.md (area, scope, lead time) and policy/pricing.md (internal pricing, never quoted to a client). This file is the only place in the code for these values.",
+  "serviceArea": {
+    "puneLocalities": [
+      "kothrud",
+      "baner",
+      "aundh",
+      "wakad",
+      "koregaon park",
+      "kalyani nagar",
+      "viman nagar",
+      "hadapsar",
+      "magarpatta",
+      "nibm",
+      "kondhwa",
+      "undri",
+      "shivane",
+      "warje",
+      "erandwane",
+      "deccan"
+    ],
+    "pcmcLocalities": ["pimpri", "chinchwad", "pimple saudagar", "pimple nilakh", "ravet", "hinjewadi"],
+    "acceptedCityNames": {
+      "pune": "Pune",
+      "pimpri": "Pimpri-Chinchwad",
+      "chinchwad": "Pimpri-Chinchwad",
+      "pcmc": "Pimpri-Chinchwad",
+      "pimpri-chinchwad": "Pimpri-Chinchwad"
+    },
+    "servedCities": ["Pune", "Pimpri-Chinchwad"],
+    "excludedPlaces": ["talegaon", "lonavala", "nashik", "mumbai"],
+    "otherCities": [
+      "thane",
+      "navi mumbai",
+      "nagpur",
+      "aurangabad",
+      "kolhapur",
+      "satara",
+      "goa",
+      "bangalore",
+      "bengaluru",
+      "hyderabad",
+      "delhi",
+      "gurgaon",
+      "noida",
+      "chennai",
+      "ahmedabad"
+    ]
   },
-  "priceDisclaimer": "Indicative only, varies by site. A designer confirms the estimate after seeing the space."
+  "scope": {
+    "commercialMaxSqft": 3000,
+    "commercialApproxTolerance": 0.1,
+    "excludedProjectTypes": ["retail", "hospitality", "restaurant", "hotel", "gym"],
+    "excludedServiceOnly": ["architecture_structural", "decor_only", "furniture_only", "vastu_only"]
+  },
+  "timeline": {
+    "minLeadTimeWeeks": 6,
+    "executionWindowWeeks": { "low": 8, "high": 10 }
+  },
+  "budget": {
+    "singleRoomLowLakh": 3.5,
+    "homePerSqftLow": 1800,
+    "officePerSqftLow": 1200,
+    "clearFailRatio": 0.5,
+    "smallestFullHomeSqft": 350,
+    "_smallestFullHomeSqft": "Used only when a caller wants a full home done but gives no size. Kept deliberately small so the budget test only catches obvious mismatches."
+  },
+  "internalPricing": {
+    "internalOnly": true,
+    "label": "Internal estimate, never quoted to the client",
+    "residentialPerSqft": {
+      "standard": { "low": 1800, "high": 2400 },
+      "premium": { "low": 2400, "high": 3500 },
+      "luxury": { "low": 3500, "high": null }
+    },
+    "commercialPerSqft": {
+      "basic": { "low": 1200, "high": 1800 },
+      "mid": { "low": 1800, "high": 2800 },
+      "premium": { "low": 2800, "high": 4000 }
+    },
+    "singleRoomLakh": { "low": 3.5, "high": 8 }
+  },
+  "pricingDeflection": "Pricing depends on the site, the materials you choose, and the scope. Your designer will walk you through it in detail at the consultation. I can book that for you right now if you'd like.",
+  "questions": {
+    "realProject": "Are you looking for a complete redesign with execution, or mainly ideas and advice?",
+    "serviceArea": "Which area is the site in? We work across Pune city and PCMC.",
+    "timeline": "When would you need the project complete?"
+  },
+  "declineLine": "This sounds like it may not be the right fit for us right now, but feel free to reach out if your timeline or scope changes."
 }
