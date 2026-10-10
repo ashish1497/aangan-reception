@@ -3,9 +3,9 @@ const assert = require('node:assert');
 const { cleanEnv, blockNetwork, mockRes } = require('../helpers');
 cleanEnv();
 const store = require('../../lib/store');
-const webhook = require('../../api/vaani-webhook');
-const callsApi = require('../../api/calls');
-const statsApi = require('../../api/stats');
+const webhook = require('../../lib/handlers/vaani-webhook');
+const callsApi = require('../../lib/handlers/calls');
+const statsApi = require('../../lib/handlers/stats');
 const { computeStats } = statsApi;
 
 const payload = {

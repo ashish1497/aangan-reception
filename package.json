@@ -7,12 +7,15 @@
     "node": ">=18"
   },
   "scripts": {
-    "dev": "node dev-server.js",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "test": "node --test test/unit test/regression.test.js test/smoke.test.js",
     "test:unit": "node --test test/unit",
     "test:regression": "node --test test/regression.test.js",
     "test:smoke": "node --test test/smoke.test.js",
     "test:e2e": "python3 test/e2e/test_dashboard.py",
+    "lighthouse": "bash scripts/lighthouse.sh",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
@@ -24,5 +27,13 @@
     "eslint": "^9.39.5",
     "globals": "^15.15.0",
     "prettier": "^3.9.10"
+  },
+  "dependencies": {
+    "@ant-design/cssinjs": "^1.24.0",
+    "@ant-design/nextjs-registry": "^1.3.0",
+    "antd": "^5.29.3",
+    "next": "^14.2.35",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   }
 }

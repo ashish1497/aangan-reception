@@ -11,3 +11,7 @@ seed/enquiries/*
 # the enquiries file, wherever it lands
 *Enquiries*.pdf
 seed/enquiries/*
+
+# Next.js build output
+.next/
+next-env.d.ts
