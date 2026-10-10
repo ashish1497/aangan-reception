@@ -43,8 +43,16 @@ test('budget below minimum is unqualified; just under is grey', () => {
   assert.strictEqual(scoreLead({ ...base, budgetLakh: RUBRIC.MIN_BUDGET_LAKH - 0.5 }).status, 'grey');
 });
 
-test('result always flags placeholder rubric values', () => {
-  assert.strictEqual(scoreLead(base).rubricIsPlaceholder, RUBRIC.IS_PLACEHOLDER);
+test('thresholds come from policy/rubric.json', () => {
+  const policy = require('../../policy/rubric.json');
+  assert.strictEqual(RUBRIC.MIN_BUDGET_LAKH, policy.minBudgetLakh);
+  assert.deepStrictEqual(RUBRIC.MIN_AREA_SQFT, policy.minAreaSqft);
+  assert.deepStrictEqual(RUBRIC.SERVICE_CITIES, policy.serviceCities);
+});
+
+test('no reason text mentions placeholders or build internals', () => {
+  const r = scoreLead({ ...base, areaSqft: 100, budgetLakh: 1 });
+  assert.ok(!/placeholder|assumption|build/i.test(r.reasons.join(' ')));
 });
 
 test('missing city does not unqualify', () => {

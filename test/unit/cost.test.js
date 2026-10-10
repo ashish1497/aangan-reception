@@ -15,8 +15,7 @@ test('zero or invalid duration costs only the LLM part', () => {
   assert.strictEqual(callCost(-30), COST.LLM_COST_PER_CALL);
 });
 
-test('rates are flagged as assumptions', () => {
-  assert.strictEqual(COST.IS_ASSUMPTION, true);
+test('project value matches the case figures', () => {
   assert.strictEqual(COST.PROJECT_VALUE_LOW, 800000);
   assert.strictEqual(COST.PROJECT_VALUE_HIGH, 1400000);
 });

@@ -67,8 +67,10 @@ test('smoke: /api/stats returns the metric set', async () => {
     assert.ok(k in s, 'missing ' + k);
 });
 
-test('smoke: /api/calls returns demo calls and a call detail', async () => {
-  const list = await (await fetch(BASE + '/api/calls')).json();
+test('smoke: /api/calls returns sample calls on request and a call detail', async () => {
+  const empty = await (await fetch(BASE + '/api/calls')).json();
+  assert.strictEqual(empty.count, 0);
+  const list = await (await fetch(BASE + '/api/calls?demo=1')).json();
   assert.ok(list.count > 0);
   const id = list.calls[0].id;
   const d = await fetch(BASE + '/api/calls?id=' + encodeURIComponent(id));

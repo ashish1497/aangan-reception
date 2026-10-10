@@ -1,0 +1,13 @@
+{
+  "serviceCities": ["pune", "pimpri-chinchwad"],
+  "minAreaSqft": { "home": 400, "office": 300 },
+  "minBudgetLakh": 5,
+  "greyBand": 0.2,
+  "nearMissRatio": 0.5,
+  "requiredFields": ["projectType", "city", "areaSqft"],
+  "ratePerSqft": {
+    "home": { "low": 1000, "high": 2000 },
+    "office": { "low": 900, "high": 1800 }
+  },
+  "priceDisclaimer": "Indicative only, varies by site. A designer confirms the estimate after seeing the space."
+}

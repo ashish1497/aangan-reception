@@ -1,6 +1,6 @@
 // GET /api/calls          list (summary rows)
 // GET /api/calls?id=...   full detail for one call
-// Add ?demo=0 to hide SYNTHETIC demo calls.
+// Add ?demo=1 to include sample calls.
 const { sendJson, getQuery } = require('../lib/http');
 const store = require('../lib/store');
 

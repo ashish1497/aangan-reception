@@ -7,7 +7,7 @@ test('returns an indicative range with the disclaimer', () => {
   assert.ok(p.low > 0 && p.high > p.low);
   assert.match(p.label, /indicative/);
   assert.match(p.disclaimer, /varies by site/i);
-  assert.strictEqual(p.isPlaceholder, PRICING.IS_PLACEHOLDER);
+  assert.strictEqual(p.disclaimer, PRICING.DISCLAIMER);
 });
 
 test('never returns a single fixed price', () => {

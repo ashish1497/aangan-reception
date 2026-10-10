@@ -56,7 +56,7 @@ function load(file) {
   console.log(counts, `of ${rows.length}`);
   const review = rows.filter((r) => r.status === 'grey' || r.second === 'near_miss');
   console.log(
-    `\nReview by hand (${review.length}): grey or near-miss. Compare each with Nikhil's qualified.md and adjust lib/rubric.js.`,
+    `\nReview by hand (${review.length}): grey or near-miss. Compare each with Nikhil's qualified.md and adjust policy/rubric.json.`,
   );
   review.forEach((r) => console.log(' -', r.file, r.status, r.second));
 })();

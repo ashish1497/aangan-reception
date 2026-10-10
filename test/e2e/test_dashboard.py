@@ -91,15 +91,17 @@ class DashboardTests(unittest.TestCase):
             self.assertNotEqual(self.kpi(k), "")
 
     # 3
-    def test_03_demo_calls_are_labelled_and_not_counted_by_default(self):
+    def test_03_empty_state_then_load_sample_calls(self):
         self.open()
-        rows = self.driver.find_elements(*tid("call-row"))
-        self.assertEqual(len(rows), 8)
-        self.assertIn("DEMO DATA", rows[0].text)
+        self.assertEqual(len(self.driver.find_elements(*tid("call-row"))), 0)
+        self.assertIn("No calls yet", self.driver.find_element(*tid("call-rows")).text)
+        self.driver.find_element(*tid("load-samples")).click()
+        self.wait.until(lambda d: len(d.find_elements(*tid("call-row"))) == 8)
+        self.assertIn("Sample call", self.driver.find_elements(*tid("call-row"))[0].text)
         self.assertEqual(self.kpi("calls"), "0")
 
     # 4
-    def test_04_count_demo_toggle_changes_kpis(self):
+    def test_04_count_samples_toggle_changes_kpis(self):
         self.open()
         self.driver.find_element(*tid("toggle-count-demo")).click()
         self.wait.until(lambda d: d.find_element(*tid("kpi-calls-value")).text == "8")
@@ -110,6 +112,8 @@ class DashboardTests(unittest.TestCase):
     # 5
     def test_05_row_click_opens_detail_with_reasons_and_transcript(self):
         self.open()
+        self.driver.find_element(*tid("toggle-show-demo")).click()
+        self.wait.until(lambda d: len(d.find_elements(*tid("call-row"))) == 8)
         self.driver.find_elements(*tid("call-row"))[0].click()
         self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, '[data-testid="call-detail"][data-loaded="true"]')))
         self.assertIn(self.driver.find_element(*tid("detail-qualification")).text.lower().split()[-1],
@@ -119,24 +123,32 @@ class DashboardTests(unittest.TestCase):
         self.assertTrue(self.driver.find_element(*tid("detail-transcript")).text.strip())
 
     # 6
-    def test_06_hiding_demo_calls_empties_the_table(self):
+    def test_06_hiding_sample_calls_empties_the_table(self):
         self.open()
+        self.driver.find_element(*tid("toggle-show-demo")).click()
+        self.wait.until(lambda d: len(d.find_elements(*tid("call-row"))) == 8)
         self.driver.find_element(*tid("toggle-show-demo")).click()
         self.wait.until(lambda d: len(d.find_elements(*tid("call-row"))) == 0)
         self.assertIn("No calls yet", self.driver.find_element(*tid("call-rows")).text)
 
     # 7
-    def test_07_cost_and_value_panel_states_assumptions(self):
+    def test_07_cost_and_value_panel(self):
         self.open()
         panel = self.driver.find_element(*tid("cost-value")).text
-        self.assertIn("ASSUMPTION", panel)
         self.assertIn("Pipeline value if converted", panel)
         self.assertIn("Rs 8 to 14 lakh", panel)
+        self.assertIn("Cost per call", panel)
 
     # 8
-    def test_08_placeholder_banner_is_visible(self):
+    def test_08_product_copy_has_no_build_notes(self):
         self.open()
-        self.assertIn("PLACEHOLDER", self.driver.find_element(By.ID, "banners").text)
+        self.driver.find_element(*tid("load-samples")).click()
+        self.wait.until(lambda d: len(d.find_elements(*tid("call-row"))) == 8)
+        self.driver.find_elements(*tid("call-row"))[0].click()
+        self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, '[data-testid="call-detail"][data-loaded="true"]')))
+        text = self.driver.find_element(By.TAG_NAME, "body").text.lower()
+        for word in ("placeholder", "assumption", "demo data", "todo", "lorem", "replace with"):
+            self.assertNotIn(word, text)
 
     # 9
     def test_09_new_webhook_call_shows_after_refresh(self):
@@ -148,7 +160,6 @@ class DashboardTests(unittest.TestCase):
         req = urllib.request.Request(BASE + "/api/vaani-webhook", data=body, headers={"content-type": "application/json"})
         urllib.request.urlopen(req, timeout=10)
         self.open()
-        self.driver.find_element(*tid("toggle-show-demo")).click()
         self.wait.until(lambda d: len(d.find_elements(*tid("call-row"))) == 1)
         row = self.driver.find_element(*tid("call-row"))
         self.assertIn("Selenium Caller", row.text)

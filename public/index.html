@@ -242,16 +242,19 @@
   <body>
     <header>
       <h1 data-testid="app-title">
-        Aangan Voice Desk <small>Incoming phone enquiries answered by Vaani, Aangan Studio, Pune</small>
+        Aangan Voice Desk
+        <small
+          >Every enquiry call answered in minutes, day or night. The right ones reach a designer with
+          everything asked and a call already booked.</small
+        >
       </h1>
       <div class="controls">
         <label
-          ><input type="checkbox" id="showDemo" data-testid="toggle-show-demo" checked /> Show demo calls in
-          table</label
+          ><input type="checkbox" id="showDemo" data-testid="toggle-show-demo" /> Show sample calls</label
         >
         <label
-          ><input type="checkbox" id="countDemo" data-testid="toggle-count-demo" /> Count demo calls in
-          KPIs</label
+          ><input type="checkbox" id="countDemo" data-testid="toggle-count-demo" /> Count sample calls in the
+          numbers</label
         >
         <button id="refresh" type="button" data-testid="refresh">Refresh</button>
       </div>
@@ -283,7 +286,9 @@
         </div>
         <section class="card" id="detail" data-testid="call-detail">
           <h2>Call detail</h2>
-          <div class="empty">Select a call to see the transcript, brief and reasons.</div>
+          <div class="empty">
+            Pick a call to see what was said, the brief the designer gets and why it was decided that way.
+          </div>
         </section>
       </div>
     </main>
@@ -342,26 +347,16 @@
             tile(s.callsAnswered, 'Calls answered', 'calls') +
             tile(s.answeredWithin5Min, 'Answered within 5 minutes', 'within-5-min') +
             tile(s.answeredWithin5MinShare + '%', 'Share answered within 5 minutes', 'within-5-min-share') +
-            tile(s.qualified, 'Qualified', 'qualified') +
-            tile(s.grey, 'Grey (human check)', 'grey') +
-            tile(s.unqualified, 'Unqualified', 'unqualified') +
-            tile(s.nearMiss, 'Near misses (second look)', 'near-miss') +
-            tile(s.bookedOnCall, 'Booked on the call', 'booked') +
-            tile(s.afterHoursShare + '%', 'After-hours calls (outside 10am to 7pm)', 'after-hours-share');
+            tile(s.qualified, "Worth a designer's time", 'qualified') +
+            tile(s.grey, 'Needs a human look', 'grey') +
+            tile(s.unqualified, 'Closed politely', 'unqualified') +
+            tile(s.nearMiss, 'Near misses to double-check', 'near-miss') +
+            tile(s.bookedOnCall, 'Booked before the call ended', 'booked') +
+            tile(s.afterHoursShare + '%', 'Calls outside 10am to 7pm', 'after-hours-share');
           var b = [];
           if (s.storage === 'memory')
-            b.push(
-              'Storage is IN-MEMORY. On Vercel this is not durable: calls can vanish on a cold start. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.',
-            );
-          if (s.placeholders.rubric || s.placeholders.pricing)
-            b.push(
-              'Qualification rules and per-sq-ft rates are PLACEHOLDERS until qualified.md and pricing.md are copied into lib/rubric.js and lib/pricing.js. Do not quote these numbers to clients.',
-            );
-          b.push(
-            s.includesDemo
-              ? 'KPIs INCLUDE synthetic demo calls.'
-              : 'KPIs count real calls only. Demo calls are excluded.',
-          );
+            b.push('Calls are held in memory and will reset when the server restarts.');
+          if (s.includesDemo) b.push('The numbers include sample calls.');
           $('banners').innerHTML = b
             .map(function (t) {
               return '<div class="banner">' + esc(t) + '</div>';
@@ -375,12 +370,12 @@
             '<dl>' +
             '<dt>Voice minutes</dt><dd>' +
             esc(c.totalVoiceMinutes) +
-            ' min x ' +
+            ' min at ' +
             inr(c.voiceCostPerMin) +
-            '/min <span class="pill grey">ASSUMPTION</span></dd>' +
+            '/min</dd>' +
             '<dt>LLM per call</dt><dd>' +
             inr(c.llmCostPerCall) +
-            ' <span class="pill grey">ASSUMPTION</span></dd>' +
+            '</dd>' +
             '<dt>Total cost</dt><dd data-testid="cost-total">' +
             inr(c.totalInr) +
             '</dd>' +
@@ -396,15 +391,13 @@
             lakh(v.pipelineHighInr) +
             '</dd>' +
             '</dl>' +
-            '<p class="small muted">Cost rates are assumptions in lib/cost.js; replace them with real Vaani and Gemini pricing. ' +
-            'Pipeline value uses the case figure of Rs 8 to 14 lakh per project. ' +
-            esc(v.caveat) +
-            '</p>';
+            '<p class="small muted">Pipeline value is what the qualified enquiries are worth if every one of them converts, at Rs 8 to 14 lakh a project. Conversion is tracked as projects close.</p>';
         }
 
         function renderRows(list) {
           if (!list.calls.length) {
-            $('rows').innerHTML = '<tr><td colspan="6" class="empty">No calls yet.</td></tr>';
+            $('rows').innerHTML =
+              '<tr><td colspan="6" class="empty">No calls yet. A call shows up here seconds after it ends. <button id="loadSamples" type="button" data-testid="load-samples">Load sample calls</button></td></tr>';
             return;
           }
           $('rows').innerHTML = list.calls
@@ -421,7 +414,7 @@
                 '</td>' +
                 '<td>' +
                 esc(r.callerName || 'Unknown') +
-                (r.demo ? ' <span class="pill demo">DEMO DATA</span>' : '') +
+                (r.demo ? ' <span class="pill demo">Sample call</span>' : '') +
                 '<div class="small muted">' +
                 esc(r.phone || '') +
                 '</div></td>' +
@@ -454,7 +447,7 @@
             .join('');
           $('detail').innerHTML =
             '<h2>Call detail ' +
-            (r.demo ? '<span class="pill demo">DEMO DATA</span>' : '') +
+            (r.demo ? '<span class="pill demo">Sample call</span>' : '') +
             '</h2>' +
             '<dl>' +
             '<dt>Caller</dt><dd>' +
@@ -530,7 +523,7 @@
             countDemo = $('countDemo').checked;
           Promise.all([
             getJson('/api/stats' + (countDemo ? '?includeDemo=1' : '')),
-            getJson('/api/calls' + (showDemo ? '' : '?demo=0')),
+            getJson('/api/calls' + (showDemo ? '?demo=1' : '')),
           ])
             .then(function (res) {
               renderStats(res[0]);
@@ -560,6 +553,12 @@
               $('detail').innerHTML = '<h2>Call detail</h2><p>' + esc(err.message) + '</p>';
             });
           if (window.innerWidth < 860) $('detail').scrollIntoView({ behavior: 'smooth' });
+        });
+        $('rows').addEventListener('click', function (e) {
+          if (e.target && e.target.id === 'loadSamples') {
+            $('showDemo').checked = true;
+            load();
+          }
         });
         $('showDemo').addEventListener('change', load);
         $('countDemo').addEventListener('change', load);

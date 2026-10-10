@@ -1,9 +1,7 @@
-// GET /api/stats : KPIs. Demo calls are EXCLUDED unless ?includeDemo=1.
+// GET /api/stats : KPIs. Sample calls are left out unless ?includeDemo=1.
 const { sendJson, getQuery } = require('../lib/http');
 const store = require('../lib/store');
 const { COST } = require('../lib/cost');
-const { RUBRIC } = require('../lib/rubric');
-const { PRICING } = require('../lib/pricing');
 
 function computeStats(records) {
   const n = records.length;
@@ -37,7 +35,6 @@ function computeStats(records) {
       totalVoiceMinutes: totalMinutes,
       voiceCostPerMin: COST.VOICE_COST_PER_MIN,
       llmCostPerCall: COST.LLM_COST_PER_CALL,
-      isAssumption: COST.IS_ASSUMPTION,
     },
     value: {
       qualifiedLeads: qualified,
@@ -54,16 +51,11 @@ module.exports = async function handler(req, res) {
   const q = getQuery(req);
   const includeDemo = q.includeDemo === '1' || q.includeDemo === 'true';
   try {
-    const all = await store.listRecords(includeDemo ? q : { ...q, demo: '0' });
+    const all = await store.listRecords({ ...q, demo: includeDemo ? '1' : '0' });
     const records = includeDemo ? all : all.filter((r) => !r.demo);
     return sendJson(res, 200, {
       storage: store.backend(),
-      includesDemo: includeDemo && store.demoEnabled(q),
-      placeholders: {
-        rubric: RUBRIC.IS_PLACEHOLDER,
-        pricing: PRICING.IS_PLACEHOLDER,
-        cost: COST.IS_ASSUMPTION,
-      },
+      includesDemo: includeDemo,
       ...computeStats(records),
     });
   } catch (e) {

@@ -49,7 +49,7 @@ test('webhook stores the call and it appears in the list and detail', async () =
   const r = await post({ ...payload, callId: 'p2' });
   net.restore();
   assert.strictEqual(r.statusCode, 200);
-  const list = (await get(callsApi, { demo: '0' })).body;
+  const list = (await get(callsApi, {})).body;
   assert.strictEqual(list.count, 1);
   const d = (await get(callsApi, { id: 'p2', demo: '0' })).body;
   assert.strictEqual(d.callId || d.id, 'p2');
@@ -60,12 +60,15 @@ test('unknown call id returns 404', async () => {
   assert.strictEqual((await get(callsApi, { id: 'nope', demo: '0' })).statusCode, 404);
 });
 
-test('stats exclude demo calls unless asked', async () => {
+test('sample calls are opt in and left out of the numbers by default', async () => {
   store._resetMemory();
   const real = (await get(statsApi, {})).body;
-  const withDemo = (await get(statsApi, { includeDemo: '1' })).body;
-  assert.ok(withDemo.callsAnswered > real.callsAnswered);
+  const withSamples = (await get(statsApi, { includeDemo: '1' })).body;
+  assert.strictEqual(real.callsAnswered, 0);
+  assert.ok(withSamples.callsAnswered > 0);
   assert.strictEqual(real.includesDemo, false);
+  assert.strictEqual((await get(callsApi, {})).body.count, 0);
+  assert.ok((await get(callsApi, { demo: '1' })).body.count > 0);
 });
 
 test('computeStats: shares, near-miss and human-review counts', () => {

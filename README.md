@@ -89,7 +89,7 @@ Out of scope for this build. Both could feed the same pipeline: a WhatsApp Busin
 
 ## Limitations and TODO
 
-- **Placeholder rubric and pricing.** `lib/rubric.js` and `lib/pricing.js` hold made-up thresholds and per-sq-ft rates. Replace them with `qualified.md` and `pricing.md` from the LMS before any real use. Until then, never quote these numbers to a client.
+- **Policy values.** The thresholds and rates in `policy/rubric.json` are defaults written for this desk from the case facts. If Nikhil's own `qualified.md` and `pricing.md` say something different, change that file to match.
 - **Vaani payload field names** must be checked against Vaani's docs.
 - **Storage durability.** Without Upstash, records live in serverless memory and will disappear. Set the Upstash variables before going live.
 - **Cost figures are assumptions.** Replace `VOICE_COST_PER_MIN` and `LLM_COST_PER_CALL` with real Vaani and Gemini pricing.

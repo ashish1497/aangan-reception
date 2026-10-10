@@ -12,7 +12,6 @@
     "test:unit": "node --test test/unit",
     "test:regression": "node --test test/regression.test.js",
     "test:smoke": "node --test test/smoke.test.js",
-    "test:legacy": "node test/run.js",
     "test:e2e": "python3 test/e2e/test_dashboard.py",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
